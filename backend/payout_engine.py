@@ -12,4 +12,4 @@ def calculate_payout(risk_score, coverage):
     else:
         payout = coverage * 0.8
 
-    return payout
+    return round(payout, 2)
