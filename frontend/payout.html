@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GigGuard AI — Payout Simulation</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* -----------------------------------------------
+       Page-specific styles: Payout Simulation
+    ----------------------------------------------- */
+
+    /* Payout hero section — large amount display */
+    .payout-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 32px;
+      background: linear-gradient(160deg, #11141b 0%, #0e1018 100%);
+      border: 1px solid rgba(245,165,35,0.2);
+      border-radius: var(--radius-lg);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    /* Decorative amber glow in background */
+    .payout-hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(245,165,35,0.10) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    /* Decorative grid lines */
+    .payout-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(245,165,35,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,165,35,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      background: var(--green-dim);
+      border: 1px solid rgba(34,217,122,0.25);
+      border-radius: 99px;
+      padding: 5px 14px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-badge .pulse {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse-green 1.6s infinite;
+    }
+
+    .hero-payout-amount {
+      font-family: var(--font-display);
+      font-size: 80px;
+      font-weight: 800;
+      color: var(--amber);
+      letter-spacing: -4px;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-payout-amount .currency-sym {
+      font-size: 40px;
+      vertical-align: super;
+      color: var(--amber-light);
+      letter-spacing: 0;
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-triggered-msg {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green-dim);
+      border: 1px solid rgba(34,217,122,0.2);
+      border-radius: 99px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green);
+      margin-top: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Calculation breakdown row */
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13.5px;
+    }
+    .calc-row:last-child { border-bottom: none; }
+    .calc-label  { color: var(--text-secondary); }
+    .calc-value  { font-weight: 600; font-family: var(--font-display); font-size: 15px; }
+    .calc-row.total {
+      padding-top: 16px;
+      margin-top: 4px;
+      border-top: 2px solid var(--border);
+      border-bottom: none;
+    }
+    .calc-row.total .calc-label { color: var(--text-primary); font-weight: 600; font-size: 15px; }
+    .calc-row.total .calc-value  { font-size: 22px; color: var(--amber); }
+
+    /* Step tracker (how payout works) */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .step-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: var(--text-muted);
+    }
+    .step-num.done {
+      background: var(--green-dim);
+      border-color: rgba(34,217,122,0.3);
+      color: var(--green);
+    }
+    .step-num.active {
+      background: rgba(245,165,35,0.1);
+      border-color: rgba(245,165,35,0.4);
+      color: var(--amber);
+    }
+    .step-text { flex: 1; }
+    .step-title {
+      font-weight: 600;
+      font-size: 13.5px;
+      margin-bottom: 3px;
+    }
+    .step-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .step-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    /* Simulation controls */
+    .sim-control {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .sim-label {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    /* Slider styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 99px;
+      background: var(--border);
+      outline: none;
+      flex: 1;
+      min-width: 120px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--amber);
+      cursor: pointer;
+      border: 2px solid #0a0c10;
+      box-shadow: 0 0 8px rgba(245,165,35,0.4);
+    }
+
+    .sim-value-display {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--amber);
+      min-width: 52px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================================================
+       NAVIGATION BAR
+  ==================================================== -->
+  <nav class="navbar">
+    <a href="dashboard.html" class="nav-logo">
+      <svg class="logo-icon" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17 2L4 7.5V17C4 24.18 9.68 30.9 17 33C24.32 30.9 30 24.18 30 17V7.5L17 2Z"
+              fill="#f5a523" fill-opacity="0.15" stroke="#f5a523" stroke-width="1.5"/>
+        <path d="M12 17l3.5 3.5L22 12" stroke="#f5a523" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="logo-text">GigGuard <span>AI</span></span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="risk-monitor.html">Risk Monitor</a></li>
+      <li><a href="payout.html" class="active">Payout</a></li>
+    </ul>
+
+    <div class="nav-status">
+      <span class="dot"></span>
+      Coverage Active
+    </div>
+  </nav>
+
+  <!-- ===================================================
+       MAIN CONTENT
+  ==================================================== -->
+  <main class="page-container">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="eyebrow">Payout Simulation</div>
+      <h1>Automatic Payout Processing</h1>
+      <p>Real-time parametric payout for Ravi Kumar · Delhi NCR Zone · Mar 15, 2026</p>
+    </div>
+
+    <!-- Success alert -->
+    <div class="alert-banner alert-success">
+      <div class="alert-icon">✅</div>
+      <div>
+        <div class="alert-title">Payout Successfully Triggered</div>
+        <div class="alert-desc">Environmental conditions breached parametric thresholds at 10:47 AM. ₹1,800 has been automatically initiated to registered UPI account ending in <strong>**91</strong>.</div>
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------
+         PAYOUT HERO CARD — large amount display
+    ----------------------------------------------- -->
+    <div class="payout-hero">
+      <!-- Green "auto-triggered" badge -->
+      <div class="hero-badge">
+        <span class="pulse"></span>
+        Auto-Triggered Payout
+      </div>
+
+      <!-- The big payout number -->
+      <div class="hero-payout-amount" id="payoutAmountDisplay">
+        <span class="currency-sym">₹</span><span id="payoutNumber">0</span>
+      </div>
+
+      <div class="hero-sub">Payout amount based on risk score &amp; plan tier</div>
+
+      <!-- Key message required -->
+      <div class="hero-triggered-msg">
+        ✓ Automatic payout triggered due to environmental disruption
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------
+         ROW 1: Plan details + Payout calculation
+    ----------------------------------------------- -->
+    <div class="grid-2" style="margin-bottom: 16px;">
+
+      <!-- Worker coverage plan -->
+      <div class="card">
+        <div class="card-title">Worker Coverage Plan</div>
+
+        <!-- Worker mini profile -->
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px; padding:12px; background:var(--bg-base); border-radius:var(--radius-md); border:1px solid var(--border);">
+          <div class="worker-avatar" style="width:40px; height:40px; font-size:15px;">RK</div>
+          <div>
+            <div style="font-weight:600; font-size:14px;">Ravi Kumar</div>
+            <div style="font-size:12px; color:var(--text-secondary);">Swiggy · Delhi NCR · ID #SWG-09124</div>
+          </div>
+        </div>
+
+        <div class="calc-row">
+          <span class="calc-label">Plan Name</span>
+          <span class="calc-value" style="font-size:14px;">Weekly Shield</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Premium Paid</span>
+          <span class="calc-value" style="font-size:14px;">₹49 / week</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Max Coverage</span>
+          <span class="calc-value" style="color:var(--amber); font-size:14px;">₹2,500</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Insurance Type</span>
+          <span class="calc-value" style="font-size:14px;">Parametric · No-claim</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Valid Period</span>
+          <span class="calc-value" style="font-size:14px;">Mar 10 – Mar 16, 2026</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Claims This Week</span>
+          <span class="calc-value" style="font-size:14px;">1 of 2 allowed</span>
+        </div>
+      </div>
+
+      <!-- Payout calculation breakdown -->
+      <div class="card">
+        <div class="card-title">Payout Calculation</div>
+
+        <div class="calc-row">
+          <span class="calc-label">Base Coverage Cap</span>
+          <span class="calc-value">₹2,500</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Risk Score</span>
+          <span class="calc-value" style="color:var(--red);">72 / 100</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Score Multiplier</span>
+          <span class="calc-value">72% (0.72×)</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Calculated Amount</span>
+          <span class="calc-value">₹2,500 × 0.72</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Platform Fee (1%)</span>
+          <span class="calc-value" style="color:var(--text-muted);">– ₹18</span>
+        </div>
+        <div class="calc-row total">
+          <span class="calc-label">Final Payout</span>
+          <span class="calc-value">₹1,800</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Payout delivery info -->
+        <div class="section-label">Delivery</div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:13px;">
+          <span style="font-size:20px;">📲</span>
+          <div>
+            <div style="font-weight:600; color:var(--text-primary);">UPI Auto-Transfer</div>
+            <div style="color:var(--text-secondary); font-size:12px;">rkumar**91@upi · Within 2 hours</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- -----------------------------------------------
+         ROW 2: Simulation slider + Processing steps
+    ----------------------------------------------- -->
+    <div class="grid-2">
+
+      <!-- Interactive simulation: adjust risk score -->
+      <div class="card">
+        <div class="card-title">Interactive Payout Simulator</div>
+        <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:20px;">
+          Adjust the risk score below to simulate how payout changes dynamically based on environmental conditions.
+        </p>
+
+        <!-- Risk score slider -->
+        <div class="sim-control">
+          <span class="sim-label">Risk Score:</span>
+          <input type="range" id="riskSlider" min="0" max="100" value="72" />
+          <span class="sim-value-display" id="sliderRiskVal">72</span>
+        </div>
+
+        <!-- Coverage cap slider -->
+        <div class="sim-control">
+          <span class="sim-label">Coverage Cap (₹):</span>
+          <input type="range" id="coverageSlider" min="500" max="5000" step="100" value="2500" />
+          <span class="sim-value-display" id="sliderCovVal">2,500</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Live simulated result -->
+        <div style="text-align:center; padding:16px 0;">
+          <div style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Simulated Payout</div>
+          <div style="font-family:var(--font-display); font-size:48px; font-weight:800; color:var(--amber); letter-spacing:-2px;" id="simPayoutDisplay">₹1,800</div>
+          <div id="simEligible" style="font-size:12px; margin-top:8px; color:var(--green);">✓ Payout Eligible (score ≥ 70)</div>
+        </div>
+
+        <!-- Visual bar for simulated payout -->
+        <div class="score-bar-wrap">
+          <div class="score-bar-label">
+            <span>Payout as % of coverage</span>
+            <span id="simPct" style="color:var(--amber); font-weight:600;">72%</span>
+          </div>
+          <div class="score-bar-track">
+            <div class="score-bar-fill fill-amber" id="simBar" style="width:72%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step-by-step processing tracker -->
+      <div class="card">
+        <div class="card-title">Payout Processing Steps</div>
+
+        <div class="steps-list">
+
+          <div class="step-item">
+            <div class="step-num done">✓</div>
+            <div class="step-text">
+              <div class="step-title" style="color:var(--green);">Conditions Detected</div>
+              <div class="step-desc">IMD + CPCB data confirmed rainfall 87 mm/hr, AQI 312 in zone.</div>
+            </div>
+            <div class="step-time">10:30 AM</div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num done">✓</div>
+            <div class="step-text">
+              <div class="step-title" style="color:var(--green);">Risk Score Calculated</div>
+              <div class="step-desc">AI model computed weighted risk score of 72.4/100 for zone.</div>
+            </div>
+            <div class="step-time">10:42 AM</div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num done">✓</div>
+            <div class="step-text">
+              <div class="step-title" style="color:var(--green);">Threshold Crossed</div>
+              <div class="step-desc">Score exceeded payout threshold (≥ 70). Coverage criteria satisfied.</div>
+            </div>
+            <div class="step-time">10:44 AM</div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num done">✓</div>
+            <div class="step-text">
+              <div class="step-title" style="color:var(--green);">Payout Amount Fixed</div>
+              <div class="step-desc">₹2,500 × 0.72 = ₹1,800 minus ₹18 platform fee = <strong>₹1,800</strong>.</div>
+            </div>
+            <div class="step-time">10:46 AM</div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num active">→</div>
+            <div class="step-text">
+              <div class="step-title" style="color:var(--amber);">Transfer Initiated</div>
+              <div class="step-desc">UPI transfer to rkumar**91@upi in progress. Estimated: 2 hrs.</div>
+            </div>
+            <div class="step-time">10:47 AM</div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num" style="color:var(--text-muted);">6</div>
+            <div class="step-text">
+              <div class="step-title" style="color:var(--text-secondary);">Transfer Complete</div>
+              <div class="step-desc">Worker receives confirmation SMS + in-app notification.</div>
+            </div>
+            <div class="step-time">~12:47 PM</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    GigGuard AI · Parametric Insurance for Gig Workers · Built with ❤️ for Hackathon 2025
+  </footer>
+
+  <!-- ===================================================
+       SCRIPT: Payout counter animation + slider simulation
+  ==================================================== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // ---- Animate payout number counting up on load ----
+      const payoutEl = document.getElementById('payoutNumber');
+      let count = 0;
+      const target = 1800;
+      const step = Math.ceil(target / 60);
+      const interval = setInterval(() => {
+        count = Math.min(count + step, target);
+        payoutEl.textContent = count.toLocaleString('en-IN');
+        if (count >= target) clearInterval(interval);
+      }, 20);
+
+      // ---- Animate score bar fills on load ----
+      document.querySelectorAll('.score-bar-fill').forEach(el => {
+        const w = el.style.width;
+        el.style.width = '0%';
+        setTimeout(() => { el.style.width = w; }, 400);
+      });
+
+      // ---- Interactive payout simulator ----
+      const riskSlider     = document.getElementById('riskSlider');
+      const coverageSlider = document.getElementById('coverageSlider');
+      const sliderRiskVal  = document.getElementById('sliderRiskVal');
+      const sliderCovVal   = document.getElementById('sliderCovVal');
+      const simDisplay     = document.getElementById('simPayoutDisplay');
+      const simBar         = document.getElementById('simBar');
+      const simPct         = document.getElementById('simPct');
+      const simEligible    = document.getElementById('simEligible');
+
+      function updateSimulation() {
+        const risk     = parseInt(riskSlider.value);
+        const coverage = parseInt(coverageSlider.value);
+
+        // Update displayed labels
+        sliderRiskVal.textContent = risk;
+        sliderCovVal.textContent  = coverage.toLocaleString('en-IN');
+
+        const pct = risk / 100;
+        const raw = Math.round(coverage * pct);
+        const fee = Math.round(raw * 0.01);
+        const final = raw - fee;
+
+        // Update payout display
+        if (risk >= 70) {
+          simDisplay.textContent = '₹' + final.toLocaleString('en-IN');
+          simDisplay.style.color = 'var(--amber)';
+          simEligible.textContent = '✓ Payout Eligible (score ≥ 70)';
+          simEligible.style.color = 'var(--green)';
+        } else if (risk >= 40) {
+          simDisplay.textContent = '₹0';
+          simDisplay.style.color = 'var(--text-muted)';
+          simEligible.textContent = '⚠ Not eligible — score must reach 70+';
+          simEligible.style.color = 'var(--amber)';
+        } else {
+          simDisplay.textContent = '₹0';
+          simDisplay.style.color = 'var(--text-muted)';
+          simEligible.textContent = '✕ No payout — risk below threshold';
+          simEligible.style.color = 'var(--text-muted)';
+        }
+
+        // Update bar width + percentage
+        simBar.style.width = pct * 100 + '%';
+        simPct.textContent = Math.round(pct * 100) + '%';
+
+        // Update bar colour based on level
+        simBar.className = 'score-bar-fill';
+        if (risk >= 70)       simBar.classList.add('fill-red');
+        else if (risk >= 40)  simBar.classList.add('fill-amber');
+        else                  simBar.classList.add('fill-green');
+      }
+
+      riskSlider.addEventListener('input', updateSimulation);
+      coverageSlider.addEventListener('input', updateSimulation);
+    });
+  </script>
+
+</body>
+</html>
