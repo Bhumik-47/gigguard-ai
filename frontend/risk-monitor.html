@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GigGuard AI — Risk Monitor</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* -----------------------------------------------
+       Page-specific styles: Risk Monitor
+    ----------------------------------------------- */
+
+    /* Gauge SVG arc segments */
+    .gauge-arc { transition: stroke-dasharray 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    /* Condition status row inside env card */
+    .condition-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12.5px;
+    }
+    .condition-status:last-child { border-bottom: none; }
+    .condition-status .cond-name  { color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+    .condition-status .cond-value { font-weight: 600; font-family: var(--font-display); font-size: 14px; }
+
+    /* Risk detail table */
+    .risk-detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .risk-detail-row:last-child { border-bottom: none; }
+    .risk-key   { color: var(--text-secondary); }
+    .risk-val   { font-weight: 500; }
+
+    /* Zone map placeholder */
+    .zone-map {
+      width: 100%;
+      height: 160px;
+      background: linear-gradient(135deg, #0e1420 0%, #111827 100%);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    /* Simulated radar rings on zone map */
+    .zone-map::before,
+    .zone-map::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(245,165,35,0.15);
+      animation: expand 3s linear infinite;
+    }
+    .zone-map::before {
+      width: 80px; height: 80px;
+      left: 50%; top: 50%;
+      transform: translate(-50%,-50%);
+    }
+    .zone-map::after {
+      width: 130px; height: 130px;
+      left: 50%; top: 50%;
+      transform: translate(-50%,-50%);
+      animation-delay: 1.5s;
+    }
+
+    @keyframes expand {
+      from { opacity: 0.6; transform: translate(-50%,-50%) scale(0.5); }
+      to   { opacity: 0;   transform: translate(-50%,-50%) scale(1.8); }
+    }
+
+    .zone-map-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      z-index: 1;
+      text-align: center;
+    }
+
+    /* Factor contribution bars */
+    .factor-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .factor-name {
+      width: 90px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .factor-bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .factor-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 1.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    .factor-pct {
+      width: 36px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================================================
+       NAVIGATION BAR
+  ==================================================== -->
+  <nav class="navbar">
+    <a href="dashboard.html" class="nav-logo">
+      <svg class="logo-icon" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17 2L4 7.5V17C4 24.18 9.68 30.9 17 33C24.32 30.9 30 24.18 30 17V7.5L17 2Z"
+              fill="#f5a523" fill-opacity="0.15" stroke="#f5a523" stroke-width="1.5"/>
+        <path d="M12 17l3.5 3.5L22 12" stroke="#f5a523" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="logo-text">GigGuard <span>AI</span></span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="risk-monitor.html" class="active">Risk Monitor</a></li>
+      <li><a href="payout.html">Payout</a></li>
+    </ul>
+
+    <div class="nav-status">
+      <span class="dot"></span>
+      Coverage Active
+    </div>
+  </nav>
+
+  <!-- ===================================================
+       MAIN CONTENT
+  ==================================================== -->
+  <main class="page-container">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="eyebrow">Risk Monitor</div>
+      <h1>Environmental Risk Dashboard</h1>
+      <p>Live conditions monitoring for Delhi NCR Zone · Updated every 5 minutes.</p>
+    </div>
+
+    <!-- Live alert banner -->
+    <div class="alert-banner alert-danger">
+      <div class="alert-icon">🔴</div>
+      <div>
+        <div class="alert-title"><span class="live-dot"></span> HIGH RISK — Active Disruption Event</div>
+        <div class="alert-desc">Multiple environmental parameters have breached trigger thresholds simultaneously. Parametric payout conditions satisfied.</div>
+      </div>
+    </div>
+
+    <!-- -----------------------------------------------
+         ROW 1: Risk Gauge + Condition Cards
+    ----------------------------------------------- -->
+    <div class="grid-3" style="margin-bottom: 16px;">
+
+      <!-- ---- RISK SCORE GAUGE ---- -->
+      <div class="card" style="display:flex; flex-direction:column; align-items:center;">
+        <div class="card-title" style="text-align:center; width:100%;">Overall Risk Score</div>
+
+        <!-- SVG Semi-circle gauge -->
+        <div class="gauge-container">
+          <svg class="gauge-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background track arc -->
+            <path d="M 20 105 A 80 80 0 0 1 180 105"
+                  fill="none" stroke="#1e2530" stroke-width="14" stroke-linecap="round"/>
+            <!-- Green segment: 0–40 -->
+            <path d="M 20 105 A 80 80 0 0 1 80 27"
+                  fill="none" stroke="#22d97a" stroke-width="14" stroke-linecap="round" opacity="0.4"/>
+            <!-- Amber segment: 40–70 -->
+            <path d="M 80 27 A 80 80 0 0 1 162 60"
+                  fill="none" stroke="#f5a523" stroke-width="14" stroke-linecap="round" opacity="0.4"/>
+            <!-- Red segment: 70–100 (active since score=72) -->
+            <path d="M 162 60 A 80 80 0 0 1 180 105"
+                  fill="none" stroke="#ff4b5c" stroke-width="14" stroke-linecap="round"/>
+            <!-- Needle dot at score 72 position -->
+            <circle cx="163" cy="58" r="8" fill="#ff4b5c" opacity="0.9"/>
+            <circle cx="163" cy="58" r="4" fill="#fff"/>
+          </svg>
+
+          <!-- Score number below gauge -->
+          <div class="gauge-score-text">
+            <span class="gauge-score-number" id="riskScoreDisplay" style="color:var(--red);">72</span>
+            <span class="gauge-score-label">out of 100</span>
+          </div>
+
+          <!-- Risk level badge -->
+          <div class="risk-level badge-red" style="font-size:14px;">
+            🔴 HIGH RISK
+          </div>
+        </div>
+
+        <!-- Threshold reference -->
+        <div style="width:100%;">
+          <div class="score-bar-track">
+            <div class="score-bar-fill fill-red" id="mainRiskBar" style="width:72%;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:5px;">
+            <span>0 – Safe</span><span>40 – Medium</span><span>70 – High</span><span>100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- ENVIRONMENTAL CONDITIONS ---- -->
+      <div class="card" style="grid-column: span 2;">
+        <div class="card-title">Environmental Conditions — Live Readings</div>
+
+        <!-- 3 metric cards in a row -->
+        <div class="grid-3" style="margin-bottom: 20px;">
+
+          <!-- Rainfall -->
+          <div class="env-card">
+            <div class="env-icon">🌧</div>
+            <div>
+              <div class="env-metric-value" style="color:#4e9eff;">
+                87<span class="env-metric-unit">mm/hr</span>
+              </div>
+              <div class="env-metric-label">Rainfall Intensity</div>
+            </div>
+            <span class="stat-badge badge-red">↑ Critical</span>
+            <div class="score-bar-wrap" style="margin-top:0;">
+              <div class="score-bar-track">
+                <div class="score-bar-fill fill-red" data-target="87" style="width:0%; background:linear-gradient(90deg,#4e9eff,#7bb8ff);"></div>
+              </div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Trigger: ≥ 50 mm/hr</div>
+            </div>
+          </div>
+
+          <!-- AQI -->
+          <div class="env-card">
+            <div class="env-icon">💨</div>
+            <div>
+              <div class="env-metric-value" style="color:var(--amber);">
+                312<span class="env-metric-unit">µg/m³</span>
+              </div>
+              <div class="env-metric-label">AQI — PM2.5</div>
+            </div>
+            <span class="stat-badge badge-red">↑ Hazardous</span>
+            <div class="score-bar-wrap" style="margin-top:0;">
+              <div class="score-bar-track">
+                <div class="score-bar-fill fill-amber" data-target="78" style="width:0%;"></div>
+              </div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Trigger: ≥ 250 µg/m³</div>
+            </div>
+          </div>
+
+          <!-- Wind Speed -->
+          <div class="env-card">
+            <div class="env-icon">🌬</div>
+            <div>
+              <div class="env-metric-value" style="color:var(--text-primary);">
+                54<span class="env-metric-unit">km/h</span>
+              </div>
+              <div class="env-metric-label">Wind Speed</div>
+            </div>
+            <span class="stat-badge badge-amber">↑ Elevated</span>
+            <div class="score-bar-wrap" style="margin-top:0;">
+              <div class="score-bar-track">
+                <div class="score-bar-fill fill-amber" data-target="54" style="width:0%;"></div>
+              </div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Trigger: ≥ 45 km/h</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Condition summary status rows -->
+        <div class="section-label">Threshold Status</div>
+        <div class="condition-status">
+          <span class="cond-name">🌧 Rainfall</span>
+          <span class="cond-value" style="color:var(--red);">87 mm/hr</span>
+          <span class="stat-badge badge-red">BREACHED</span>
+        </div>
+        <div class="condition-status">
+          <span class="cond-name">💨 Air Quality (AQI)</span>
+          <span class="cond-value" style="color:var(--red);">312 µg/m³</span>
+          <span class="stat-badge badge-red">BREACHED</span>
+        </div>
+        <div class="condition-status">
+          <span class="cond-name">🌬 Wind Speed</span>
+          <span class="cond-value" style="color:var(--amber);">54 km/h</span>
+          <span class="stat-badge badge-amber">BREACHED</span>
+        </div>
+        <div class="condition-status">
+          <span class="cond-name">🌡 Temperature</span>
+          <span class="cond-value" style="color:var(--green);">28 °C</span>
+          <span class="stat-badge badge-green">Normal</span>
+        </div>
+        <div class="condition-status">
+          <span class="cond-name">👁 Visibility</span>
+          <span class="cond-value" style="color:var(--amber);">320 m</span>
+          <span class="stat-badge badge-amber">Poor</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- -----------------------------------------------
+         ROW 2: Risk Factor Breakdown + Zone Status + Score Details
+    ----------------------------------------------- -->
+    <div class="grid-3">
+
+      <!-- Risk factor contribution breakdown -->
+      <div class="card">
+        <div class="card-title">Risk Score Composition</div>
+        <div style="margin-top: 4px;">
+
+          <div class="factor-row">
+            <div class="factor-name">🌧 Rainfall</div>
+            <div class="factor-bar-track">
+              <div class="factor-bar-fill" data-target="35" style="width:0%; background:linear-gradient(90deg,#4e9eff,#7bb8ff);"></div>
+            </div>
+            <div class="factor-pct">35</div>
+          </div>
+
+          <div class="factor-row">
+            <div class="factor-name">💨 AQI</div>
+            <div class="factor-bar-track">
+              <div class="factor-bar-fill" data-target="25" style="width:0%; background:linear-gradient(90deg,#f5a523,#ffd166);"></div>
+            </div>
+            <div class="factor-pct">25</div>
+          </div>
+
+          <div class="factor-row">
+            <div class="factor-name">🌬 Wind</div>
+            <div class="factor-bar-track">
+              <div class="factor-bar-fill" data-target="12" style="width:0%; background:linear-gradient(90deg,#aaa,#ddd);"></div>
+            </div>
+            <div class="factor-pct">12</div>
+          </div>
+
+          <div class="factor-row">
+            <div class="factor-name">👁 Visibility</div>
+            <div class="factor-bar-track">
+              <div class="factor-bar-fill" data-target="15" style="width:0%; background:linear-gradient(90deg,#c084fc,#e9d5ff);"></div>
+            </div>
+            <div class="factor-pct">15</div>
+          </div>
+
+          <div class="factor-row">
+            <div class="factor-name">🌡 Combined</div>
+            <div class="factor-bar-track">
+              <div class="factor-bar-fill" data-target="85" style="width:0%; background:linear-gradient(90deg,#ff4b5c,#ff8c94);"></div>
+            </div>
+            <div class="factor-pct" style="color:var(--red);">85%</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div style="font-size:12px; color:var(--text-muted);">AI model v2.1 · Last calibrated Mar 10, 2026</div>
+      </div>
+
+      <!-- Zone Activity Map (visual placeholder) -->
+      <div class="card">
+        <div class="card-title">Disruption Zone — Delhi NCR</div>
+        <div class="zone-map">
+          <!-- Simulated radar centre dot -->
+          <svg style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);" width="16" height="16">
+            <circle cx="8" cy="8" r="5" fill="var(--amber)" opacity="0.9"/>
+            <circle cx="8" cy="8" r="8" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.4"/>
+          </svg>
+          <div class="zone-map-label">
+            📍 Laxmi Nagar Zone<br/>
+            <span style="color:var(--red); font-weight:600;">Active Disruption</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Nearby zones -->
+        <div class="section-label">Nearby Zones</div>
+        <div class="condition-status">
+          <span class="cond-name">📍 Laxmi Nagar</span>
+          <span class="stat-badge badge-red">HIGH</span>
+        </div>
+        <div class="condition-status">
+          <span class="cond-name">📍 Preet Vihar</span>
+          <span class="stat-badge badge-amber">MED</span>
+        </div>
+        <div class="condition-status">
+          <span class="cond-name">📍 Mayur Vihar</span>
+          <span class="stat-badge badge-green">LOW</span>
+        </div>
+      </div>
+
+      <!-- Score calculation details -->
+      <div class="card">
+        <div class="card-title">Score Calculation Details</div>
+
+        <div class="risk-detail-row">
+          <span class="risk-key">Algorithm</span>
+          <span class="risk-val">Weighted Parametric AI</span>
+        </div>
+        <div class="risk-detail-row">
+          <span class="risk-key">Data Sources</span>
+          <span class="risk-val">IMD + CPCB + SAFAR</span>
+        </div>
+        <div class="risk-detail-row">
+          <span class="risk-key">Update Interval</span>
+          <span class="risk-val">Every 5 minutes</span>
+        </div>
+        <div class="risk-detail-row">
+          <span class="risk-key">Last Updated</span>
+          <span class="risk-val">10:50 AM today</span>
+        </div>
+        <div class="risk-detail-row">
+          <span class="risk-key">Raw Score</span>
+          <span class="risk-val" style="color:var(--red); font-family:var(--font-display); font-weight:700;">72.4 / 100</span>
+        </div>
+        <div class="risk-detail-row">
+          <span class="risk-key">Risk Level</span>
+          <span class="risk-val" style="color:var(--red);">HIGH</span>
+        </div>
+        <div class="risk-detail-row">
+          <span class="risk-key">Payout Eligible</span>
+          <span class="risk-val" style="color:var(--green);">Yes (≥ 70)</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- CTA to payout page -->
+        <a href="payout.html" style="display:block; text-align:center; padding:10px; background:rgba(245,165,35,0.1); border:1px solid rgba(245,165,35,0.25); border-radius:var(--radius-sm); font-size:12.5px; font-weight:600; color:var(--amber); text-decoration:none;">
+          View Triggered Payout →
+        </a>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    GigGuard AI · Parametric Insurance for Gig Workers · Built with ❤️ for Hackathon 2025
+  </footer>
+
+  <!-- ===================================================
+       SCRIPT: Animate all progress bars on load
+  ==================================================== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Animate score bars that use data-target for percentage
+      document.querySelectorAll('.score-bar-fill, .factor-bar-fill').forEach(el => {
+        const target = el.dataset.target ? `${el.dataset.target}%` : el.style.width;
+        el.style.width = '0%';
+        setTimeout(() => { el.style.width = target; }, 400);
+      });
+
+      // Animate the main risk bar
+      const mainBar = document.getElementById('mainRiskBar');
+      if (mainBar) {
+        mainBar.style.width = '0%';
+        setTimeout(() => { mainBar.style.width = '72%'; }, 400);
+      }
+
+      // Animate risk score number counting up
+      const scoreEl = document.getElementById('riskScoreDisplay');
+      if (scoreEl) {
+        let count = 0;
+        const target = 72;
+        const interval = setInterval(() => {
+          count += 2;
+          if (count >= target) { count = target; clearInterval(interval); }
+          scoreEl.textContent = count;
+        }, 25);
+      }
+    });
+  </script>
+
+</body>
+</html>
