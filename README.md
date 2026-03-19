@@ -1,166 +1,155 @@
+# GigGuard AI
 
-# GigGuard AI — Backend
+Parametric insurance system designed to protect gig workers from income loss caused by environmental disruptions.
 
-AI-powered parametric insurance backend for gig workers.  
-Built with **Python + FastAPI**.
+---
+
+## Problem
+
+Delivery partners (Swiggy, Zomato, Blinkit, etc.) rely on daily earnings. External conditions such as heavy rainfall, high pollution, and strong winds can reduce their working hours significantly.
+
+In many cases, workers lose up to 20–30% of their income due to factors beyond their control, with no immediate financial protection.
+
+---
+
+## Solution
+
+GigGuard AI provides a parametric insurance model that monitors environmental conditions and automatically triggers payouts when disruption thresholds are met.
+
+The system removes the need for claim filing by using predefined triggers and real-time data to determine eligibility.
+
+---
+
+## Target User
+
+* Platform-based delivery partners
+* Urban regions (e.g., Delhi NCR)
+* Workers dependent on daily or weekly income
+
+---
+
+## Pricing Model
+
+| Plan          | Premium  | Coverage | Claims           |
+| ------------- | -------- | -------- | ---------------- |
+| Weekly Shield | ₹49/week | ₹2500    | Up to 2 per week |
+
+The pricing model aligns with the weekly earning cycle of gig workers.
+
+---
+
+## Parametric Triggers
+
+Payouts are triggered when environmental conditions exceed defined limits:
+
+* Rainfall > 50 mm/hr
+* AQI > 250
+* Wind Speed > 45 km/h
+
+---
+
+## Risk Calculation
+
+```id="y7nh5g"
+risk_score = 0.5 × rainfall + 0.3 × AQI + 0.2 × wind_speed
+```
+
+Each parameter is normalized between safe and critical thresholds before computing the final score.
+
+---
+
+## Payout Logic
+
+| Risk Score  | Payout          |
+| ----------- | --------------- |
+| < 0.60      | No payout       |
+| 0.60 – 0.74 | 30% of coverage |
+| 0.75 – 0.89 | 50% of coverage |
+| ≥ 0.90      | 80% of coverage |
+
+A small platform fee is deducted from the final payout.
+
+---
+
+## System Flow
+
+User → Frontend → Backend API → Environmental Data → Risk Engine → Payout Engine → Result
+
+---
+
+## Key Features
+
+* Risk assessment based on environmental conditions
+* Parametric insurance model with predefined triggers
+* Automatic payout calculation without manual claims
+* Integration with external data sources (weather APIs)
+* Dashboard for monitoring risk and payouts
+
+---
+
+## Tech Stack
+
+* Frontend: HTML, CSS
+* Backend: FastAPI (Python)
+* External APIs: OpenWeatherMap
+* Data Processing: Python services
 
 ---
 
 ## Project Structure
 
 ```
-backend/
-├── main.py            # FastAPI app, all routes, CORS config
-├── risk_engine.py     # Computes disruption risk score (0.0 – 1.0)
-├── payout_engine.py   # Decides payout tier & calculates INR amount
-├── data_service.py    # Mock worker/plan data + environmental scenarios
-├── requirements.txt   # Python dependencies
-└── README.md          # This file
+gigguard-ai/
+├── backend/
+│   ├── main.py
+│   ├── risk_engine.py
+│   ├── payout_engine.py
+│   ├── data_service.py
+│   ├── requirements.txt
+│
+├── frontend/
+│   ├── dashboard.html
+│   ├── risk-monitor.html
+│   ├── payout.html
+│   ├── style.css
 ```
 
 ---
 
-## Quick Start
+## Running the Project
 
-### 1. Create a virtual environment (recommended)
-
-```bash
-python -m venv venv
-source venv/bin/activate        # macOS / Linux
-venv\Scripts\activate           # Windows
 ```
-
-### 2. Install dependencies
-
-```bash
+cd backend
 pip install -r requirements.txt
-```
-
-### 3. Run the development server
-
-```bash
 uvicorn main:app --reload
 ```
 
-The API is now live at **http://127.0.0.1:8000**
+Access API at: http://127.0.0.1:8000/docs
 
 ---
 
 ## API Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/` | Health check |
-| GET | `/dashboard` | All data for dashboard.html |
-| GET | `/risk` | Live environmental conditions + risk score |
-| GET | `/simulate` | Random disruption event + payout calculation |
-| GET | `/calculate` | Custom calculation via query params |
-
-### Interactive API docs (Swagger UI)
-
-Open **http://127.0.0.1:8000/docs** in your browser to explore and test all endpoints.
+* `/dashboard` → Worker dashboard data
+* `/risk` → Current environmental risk
+* `/simulate` → Random disruption scenario
+* `/calculate` → Custom risk and payout
 
 ---
 
-## Example Requests
+## Design Considerations
 
-### GET /risk
-```
-curl http://127.0.0.1:8000/risk
-```
-```json
-{
-  "rainfall": 87.0,
-  "aqi": 312.0,
-  "wind_speed": 54.0,
-  "risk_score": 0.7756,
-  "risk_level": "HIGH",
-  "payout_triggered": true,
-  "payout": 1232.5,
-  ...
-}
-```
-
-### GET /simulate
-```
-curl http://127.0.0.1:8000/simulate
-```
-Returns a randomly chosen scenario — call multiple times to see different outputs.
-
-### GET /calculate (custom inputs)
-```
-curl "http://127.0.0.1:8000/calculate?rainfall=70&aqi=280&wind_speed=20&coverage_cap=2500"
-```
-```json
-{
-  "rainfall": 70,
-  "aqi": 280,
-  "wind_speed": 20,
-  "risk_score": 0.83,
-  "risk_level": "HIGH",
-  "payout_triggered": true,
-  "payout_percentage": 0.5,
-  "payout": 1237.5,
-  "message": "Automatic payout triggered due to environmental disruption..."
-}
-```
+* Focus strictly on income protection (no health, vehicle, or life coverage)
+* Weekly pricing model aligned with gig economy patterns
+* Simple, automated workflow to reduce friction for workers
 
 ---
 
-## Risk Score Formula
+## Future Scope
 
-```
-risk_score = 0.50 × norm(rainfall)  +  0.30 × norm(AQI)  +  0.20 × norm(wind_speed)
-```
-
-Where `norm(x)` linearly maps each parameter between its safe baseline and critical ceiling:
-
-| Parameter | Safe (0.0) | Critical (1.0) |
-|-----------|-----------|---------------|
-| Rainfall | 10 mm/hr | 100 mm/hr |
-| AQI | 100 µg/m³ | 400 µg/m³ |
-| Wind Speed | 20 km/h | 80 km/h |
+* Real-time AQI integration
+* Location-based risk personalization
+* Mobile application interface
+* Integration with gig platforms for onboarding
 
 ---
-
-## Payout Tiers
-
-| Risk Score | Payout |
-|-----------|--------|
-| < 0.60 | 0 % (no payout) |
-| 0.60 – 0.74 | 30 % of coverage cap |
-| 0.75 – 0.89 | 50 % of coverage cap |
-| ≥ 0.90 | 80 % of coverage cap |
-
-A 1 % platform fee is deducted from the gross payout.
-
----
-
-## Connecting the Frontend
-
-In each frontend HTML file, replace the mock data fetch with:
-
-```javascript
-// dashboard.html
-const res = await fetch("http://127.0.0.1:8000/dashboard");
-const data = await res.json();
-
-// risk-monitor.html
-const res = await fetch("http://127.0.0.1:8000/risk");
-
-// payout.html — simulator slider
-const res = await fetch(
-  `http://127.0.0.1:8000/calculate?rainfall=${r}&aqi=${a}&wind_speed=${w}`
-);
-```
-
-CORS is already configured to allow all origins during development.
-
----
-
-## Production Notes
-
-- Replace `allow_origins=["*"]` in `main.py` with your frontend domain.
-- Replace mock data in `data_service.py` with real DB queries and IMD/CPCB API calls.
-- Add authentication (API keys / OAuth2) for worker-specific endpoints.
-- Deploy with: `uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4`
