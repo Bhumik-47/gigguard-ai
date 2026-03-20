@@ -108,7 +108,7 @@ gigguard-ai/
 │   ├── requirements.txt
 │
 ├── frontend/
-│   ├── dashboard.html
+│   ├── index.html
 │   ├── risk-monitor.html
 │   ├── payout.html
 │   ├── style.css
