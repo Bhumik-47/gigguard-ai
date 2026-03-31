@@ -1,21 +1,17 @@
 """
 data_service.py
 ---------------
-GigGuard AI — Data Service  (v3)
+GigGuard AI — Data Service  (v4)
 
-Orchestrates all four engines in the correct order:
-  1. risk_engine   → calculate_risk(), predict_risk_trend()
-  2. exclusions    → evaluate_exclusions()        (BEFORE payout — no point
-                     computing amounts for excluded claims)
-  3. payout_engine → calculate_payout() + apply_exclusion_to_payout()
-  4. fraud_engine  → detect_fraud()              (AFTER payout decision —
-                     needs to see whether payout was triggered)
+Orchestration order (unchanged):
+  1. risk_engine   → calculate_risk()  [now returns trend, anomaly, predicted_score]
+  2. predict_risk_trend()
+  3. exclusions    → evaluate_exclusions()
+  4. payout_engine → calculate_payout() [now takes anomaly_detected + claims_this_period]
+  5. apply_exclusion_to_payout()
+  6. fraud_engine  → detect_fraud()    [now takes anomaly_flag]
 
-All v1 public function signatures are preserved unchanged:
-  get_weather_by_location()
-  get_current_environmental_data()
-  get_simulated_event()
-  get_dashboard_data()
+All v3 public function signatures are preserved unchanged.
 """
 
 import random
@@ -38,7 +34,7 @@ _OWM_API_KEY = "42d50818462ba415d9bb917acb935f72"
 
 
 # ---------------------------------------------------------------------------
-# Static worker & plan data (unchanged from v1)
+# Static data (unchanged from v3)
 # ---------------------------------------------------------------------------
 
 WORKER_PROFILE = {
@@ -69,7 +65,6 @@ COVERAGE_PLAN = {
         "aqi_ug_m3":          250,
         "wind_speed_km_h":    45,
     },
-    # v3 NEW — explicit exclusion summary displayed on frontend plan card
     "exclusions_summary": [
         "Pandemic / Government-declared health emergency (Section 4a)",
         "War, armed conflict, riots, curfew (Section 4b)",
@@ -88,7 +83,6 @@ PAYOUT_DELIVERY = {
     "eta_hours":     2,
 }
 
-# Default claim context — in production, fetched from DB per worker
 _DEFAULT_CLAIM_CTX = ClaimContext(
     claims_this_week=    COVERAGE_PLAN["claims_used_this_week"],
     max_claims_per_week= COVERAGE_PLAN["max_claims_per_week"],
@@ -104,7 +98,7 @@ _DEFAULT_CLAIM_CTX = ClaimContext(
 
 
 # ---------------------------------------------------------------------------
-# Environmental scenario library (expanded from v1)
+# Scenario library (unchanged)
 # ---------------------------------------------------------------------------
 
 _DISRUPTION_SCENARIOS = [
@@ -112,27 +106,21 @@ _DISRUPTION_SCENARIOS = [
     {"rainfall": 95.0,  "aqi": 280.0, "wind_speed": 60.0, "label": "Cyclonic rainfall"},
     {"rainfall": 120.0, "aqi": 390.0, "wind_speed": 72.0, "label": "Extreme storm event"},
 ]
-
 _MEDIUM_SCENARIOS = [
     {"rainfall": 35.0, "aqi": 200.0, "wind_speed": 35.0, "label": "Moderate pollution + rain"},
     {"rainfall": 45.0, "aqi": 230.0, "wind_speed": 40.0, "label": "Pre-monsoon haze"},
 ]
-
 _CALM_SCENARIOS = [
-    {"rainfall": 5.0, "aqi": 80.0, "wind_speed": 12.0, "label": "Clear morning"},
-    {"rainfall": 0.0, "aqi": 60.0, "wind_speed": 8.0,  "label": "Sunny day"},
+    {"rainfall": 5.0, "aqi": 80.0,  "wind_speed": 12.0, "label": "Clear morning"},
+    {"rainfall": 0.0, "aqi": 60.0,  "wind_speed": 8.0,  "label": "Sunny day"},
 ]
 
 
 # ---------------------------------------------------------------------------
-# Real weather API (unchanged from v1)
+# Real weather API (unchanged)
 # ---------------------------------------------------------------------------
 
 def get_weather_by_location(lat: float, lon: float) -> dict:
-    """
-    Fetch real weather data from OpenWeatherMap using coordinates.
-    Falls back to safe defaults if the API is unreachable.
-    """
     url = (
         f"https://api.openweathermap.org/data/2.5/weather?"
         f"lat={lat}&lon={lon}&appid={_OWM_API_KEY}&units=metric"
@@ -151,7 +139,7 @@ def get_weather_by_location(lat: float, lon: float) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Core payload builder — orchestrates all 4 engines
+# Core payload builder — v4
 # ---------------------------------------------------------------------------
 
 def _build_env_payload(
@@ -162,25 +150,34 @@ def _build_env_payload(
     claim_ctx:  ClaimContext = _DEFAULT_CLAIM_CTX,
 ) -> dict:
     """
-    Run all engines in sequence and assemble a single structured response dict.
+    Orchestrates all four engines and assembles the full v4 response dict.
 
-    Engine order (important)
-    ------------------------
-    1. Risk engine   — pure environmental scoring; no business logic
-    2. Exclusion engine — check BEFORE payout (exclude first, compute second)
-    3. Payout engine — compute amounts; apply exclusion adjustment
-    4. Fraud engine  — check AFTER payout decision (needs trigger result)
-    5. Zero out effective_payout if fraud verdict is SUSPICIOUS or BLOCKED
+    New fields added in v4 (beyond v3)
+    ------------------------------------
+    From risk_engine:
+      trend, trend_velocity, slope, r_squared
+      anomaly_flag, anomaly_severity, anomaly_details, max_z_score
+      predicted_risk_score, predicted_risk_level
+      risk_category_reason, decision_explanation
+
+    From payout_engine:
+      risk_loading, claim_adjustment, final_payout
+      payout_explanation
+      actuarial.event_probability, actuarial.expected_loss,
+      actuarial.dynamic_premium, actuarial.risk_loading, actuarial.claim_adjustment
+
+    From fraud_engine:
+      raw_score, fraud_score, fraud_flag, fraud_explanation
     """
 
-    # ── 1. Risk engine ────────────────────────────────────────────────────
+    # ── 1. Risk engine (v4 — now returns trend + anomaly + predicted) ─────
     risk:  RiskResult  = calculate_risk(rainfall, aqi, wind_speed)
     trend: TrendResult = predict_risk_trend(rainfall, aqi, wind_speed)
 
     # ── 2. Exclusion engine ───────────────────────────────────────────────
     exclusion: ExclusionResult = evaluate_exclusions(claim_ctx)
 
-    # ── 3. Payout engine ──────────────────────────────────────────────────
+    # ── 3. Payout engine (v4 — passes anomaly + claim count) ─────────────
     plan = CoveragePlan(
         plan_name=           COVERAGE_PLAN["plan_name"],
         coverage_cap=        COVERAGE_PLAN["coverage_cap_inr"],
@@ -189,23 +186,21 @@ def _build_env_payload(
         max_claims_per_month=COVERAGE_PLAN["max_claims_per_month"],
     )
     payout: PayoutResult = calculate_payout(
-        risk.risk_score, risk.risk_level, plan, include_actuarial=True
+        risk.risk_score, risk.risk_level, plan,
+        include_actuarial=True,
+        anomaly_detected=risk.anomaly_flag,
+        claims_this_period=claim_ctx.claims_this_week + 1,
     )
 
-    # Apply exclusion adjustment to payout amounts
     if exclusion.is_excluded:
         payout = apply_exclusion_to_payout(
-            payout,
-            exclusion_code=   exclusion.exclusion_code,
-            is_partial=       exclusion.is_partial,
-            reduction_pct=    exclusion.reduction_pct,
-            exclusion_reason= exclusion.reason,
+            payout, exclusion.exclusion_code, exclusion.is_partial,
+            exclusion.reduction_pct, exclusion.reason,
         )
 
-    # Effective payout = exclusion-adjusted amount (or full net if SAFE)
-    effective = payout.adjusted_net_payout if exclusion.is_excluded else payout.net_payout
+    effective = payout.adjusted_net_payout if exclusion.is_excluded else payout.final_payout
 
-    # ── 4. Fraud engine ───────────────────────────────────────────────────
+    # ── 4. Fraud engine (v4 — passes anomaly_flag) ────────────────────────
     fraud: FraudResult = detect_fraud(
         payout_triggered=    payout.payout_triggered,
         risk_score=          risk.risk_score,
@@ -217,13 +212,12 @@ def _build_env_payload(
         wind_score=          risk.wind_score,
         claims_this_week=    claim_ctx.claims_this_week,
         max_claims_per_week= claim_ctx.max_claims_per_week,
+        anomaly_flag=        risk.anomaly_flag,
     )
 
-    # ── 5. Zero out payout if fraud verdict is SUSPICIOUS or BLOCKED ──────
     if fraud.verdict in ("BLOCKED", "SUSPICIOUS"):
         effective = 0.0
 
-    # ── Assemble response ─────────────────────────────────────────────────
     act = payout.actuarial
 
     return {
@@ -233,7 +227,7 @@ def _build_env_payload(
         "wind_speed":     wind_speed,
         "scenario_label": label,
 
-        # Risk engine
+        # ── Risk engine ───────────────────────────────────────────────────
         "component_scores": {
             "rainfall_score": risk.rainfall_score,
             "aqi_score":      risk.aqi_score,
@@ -252,7 +246,24 @@ def _build_env_payload(
             "label": risk.confidence_label,
         },
 
-        # Trend prediction
+        # ── v4 AI outputs ─────────────────────────────────────────────────
+        "trend":          risk.trend,           # "increasing"|"stable"|"decreasing"
+        "trend_velocity": risk.trend_velocity,
+        "slope":          risk.slope,
+        "r_squared":      risk.r_squared,
+
+        "anomaly_flag":     risk.anomaly_flag,
+        "anomaly_severity": risk.anomaly_severity,
+        "anomaly_details":  risk.anomaly_details,
+        "max_z_score":      risk.max_z_score,
+
+        "predicted_risk_score": risk.predicted_risk_score,
+        "predicted_risk_level": risk.predicted_risk_level,
+
+        "risk_category_reason": risk.risk_category_reason,
+        "decision_explanation": risk.decision_explanation,
+
+        # ── Trend (heuristic) ─────────────────────────────────────────────
         "risk_trend": {
             "trend":                trend.trend,
             "message":              trend.message,
@@ -261,7 +272,7 @@ def _build_env_payload(
             "confidence":           trend.confidence,
         },
 
-        # Exclusion engine
+        # ── Exclusion ─────────────────────────────────────────────────────
         "exclusion": {
             "is_excluded":        exclusion.is_excluded,
             "exclusion_code":     exclusion.exclusion_code,
@@ -271,7 +282,7 @@ def _build_env_payload(
             "applicable_clauses": exclusion.applicable_clauses,
         },
 
-        # Payout engine — full financial breakdown
+        # ── Payout ────────────────────────────────────────────────────────
         "payout_triggered":    payout.payout_triggered,
         "tier_label":          payout.tier_label,
         "tier_desc":           payout.tier_desc,
@@ -280,35 +291,47 @@ def _build_env_payload(
         "gross_payout":        payout.gross_payout,
         "platform_fee":        payout.platform_fee,
         "net_payout":          payout.net_payout,
-        "effective_payout":    effective,       # post-exclusion + post-fraud
-        "payout":              effective,       # v1 compatibility alias
+
+        # v4 payout additions
+        "risk_loading":        payout.risk_loading,
+        "claim_adjustment":    payout.claim_adjustment,
+        "final_payout":        payout.final_payout,
+        "effective_payout":    effective,
+        "payout":              effective,       # v1/v2/v3 compat
         "payout_message":      payout.message,
+        "payout_explanation":  payout.payout_explanation,
         "exclusion_applied":   payout.exclusion_applied,
         "adjusted_net_payout": payout.adjusted_net_payout,
 
-        # Actuarial model
+        # ── Actuarial ─────────────────────────────────────────────────────
         "actuarial": {
-            "pure_premium":          act.pure_premium           if act else None,
-            "loaded_premium":        act.loaded_premium         if act else None,
-            "premium_adequacy":      act.premium_adequacy       if act else None,
-            "expected_loss_ratio":   act.expected_loss_ratio    if act else None,
-            "claims_reserve":        act.claims_reserve         if act else None,
-            "expected_weekly_payout":act.expected_weekly_payout if act else None,
+            "pure_premium":           act.pure_premium           if act else None,
+            "loaded_premium":         act.loaded_premium         if act else None,
+            "premium_adequacy":       act.premium_adequacy       if act else None,
+            "expected_loss_ratio":    act.expected_loss_ratio    if act else None,
+            "claims_reserve":         act.claims_reserve         if act else None,
+            "expected_weekly_payout": act.expected_weekly_payout if act else None,
+            # v4 NEW actuarial fields
+            "event_probability":      act.event_probability      if act else None,
+            "expected_loss":          act.expected_loss          if act else None,
+            "dynamic_premium":        act.dynamic_premium        if act else None,
+            "risk_loading":           act.risk_loading           if act else None,
+            "claim_adjustment":       act.claim_adjustment       if act else None,
         },
 
-        # Fraud detection
+        # ── Fraud ─────────────────────────────────────────────────────────
         "fraud_check": {
-            "fraud_score":  fraud.fraud_score,
-            "verdict":      fraud.verdict,      # SAFE | REVIEW | SUSPICIOUS | BLOCKED
-            "flag_codes":   fraud.flag_codes,
-            "reason":       fraud.reason,
-            "auto_approve": fraud.auto_approve,
+            "raw_score":        fraud.raw_score,
+            "fraud_score":      fraud.fraud_score,       # 0.0–1.0 (v4)
+            "fraud_flag":       fraud.fraud_flag,        # bool (v4)
+            "verdict":          fraud.verdict,
+            "flag_codes":       fraud.flag_codes,
+            "reason":           fraud.reason,
+            "fraud_explanation":fraud.fraud_explanation, # v4
+            "auto_approve":     fraud.auto_approve,
             "flags": [
-                {
-                    "rule_code":   f.rule_code,
-                    "weight":      f.weight,
-                    "description": f.description,
-                }
+                {"rule_code": f.rule_code, "weight": f.weight,
+                 "description": f.description}
                 for f in fraud.flags
             ],
         },
@@ -318,29 +341,18 @@ def _build_env_payload(
 
 
 # ---------------------------------------------------------------------------
-# Public service functions — all v1 signatures preserved
+# Public service functions — all v3 signatures preserved
 # ---------------------------------------------------------------------------
 
 def get_current_environmental_data() -> dict:
-    """
-    Fetch live weather from OpenWeatherMap and run the full engine pipeline.
-    AQI is a static placeholder (200 µg/m³) until a CPCB/SAFAR API key
-    is configured. Swap with a real AQI endpoint in production.
-    """
-    weather    = get_weather_by_location(28.61, 77.23)   # Delhi, India
+    weather    = get_weather_by_location(28.61, 77.23)
     rainfall   = weather["rainfall"]
     wind_speed = weather["wind_speed"]
-    aqi        = 200.0   # placeholder
-
+    aqi        = 200.0
     return _build_env_payload(rainfall, aqi, wind_speed, "Live Weather API")
 
 
 def get_simulated_event() -> dict:
-    """
-    Return a randomly chosen scenario.
-    Weighted: 60% disruption / 20% medium / 20% calm.
-    Repeated calls demonstrate the full range of all engines.
-    """
     roll = random.random()
     if roll < 0.60:
         s = random.choice(_DISRUPTION_SCENARIOS)
@@ -352,45 +364,48 @@ def get_simulated_event() -> dict:
 
 
 def get_dashboard_data() -> dict:
-    """
-    Aggregate all data for the Worker Dashboard page (dashboard.html).
-    Runs the full engine pipeline and structures the result for the UI.
-    """
     env = get_current_environmental_data()
-
     return {
         "worker": WORKER_PROFILE,
         "plan":   COVERAGE_PLAN,
-
-        # Risk snapshot — includes trend + confidence
         "current_risk": {
-            "risk_score":     env["risk_score"],
-            "risk_level":     env["risk_level"],
-            "primary_hazard": env["primary_hazard"],
-            "rainfall":       env["rainfall"],
-            "aqi":            env["aqi"],
-            "wind_speed":     env["wind_speed"],
-            "imd_bands":      env["imd_bands"],
-            "confidence":     env["confidence"],
-            "risk_trend":     env["risk_trend"],
+            "risk_score":           env["risk_score"],
+            "risk_level":           env["risk_level"],
+            "primary_hazard":       env["primary_hazard"],
+            "rainfall":             env["rainfall"],
+            "aqi":                  env["aqi"],
+            "wind_speed":           env["wind_speed"],
+            "imd_bands":            env["imd_bands"],
+            "confidence":           env["confidence"],
+            "risk_trend":           env["risk_trend"],
+            # v4 NEW
+            "trend":                env["trend"],
+            "trend_velocity":       env["trend_velocity"],
+            "anomaly_flag":         env["anomaly_flag"],
+            "anomaly_severity":     env["anomaly_severity"],
+            "predicted_risk_score": env["predicted_risk_score"],
+            "predicted_risk_level": env["predicted_risk_level"],
+            "risk_category_reason": env["risk_category_reason"],
+            "decision_explanation": env["decision_explanation"],
         },
-
-        # Payout status — full breakdown + exclusion + fraud
         "payout_status": {
-            "triggered":          env["payout_triggered"],
-            "tier_label":         env["tier_label"],
-            "payout_percentage":  env["payout_percentage"],
-            "gross_payout":       env["gross_payout"],
-            "platform_fee":       env["platform_fee"],
-            "net_payout":         env["net_payout"],
-            "effective_payout":   env["effective_payout"],
-            "amount_inr":         env["effective_payout"],   # v1 compat
-            "exclusion":          env["exclusion"],
-            "fraud_check":        env["fraud_check"],
-            "message":            env["payout_message"],
-            "delivery":           PAYOUT_DELIVERY,
+            "triggered":           env["payout_triggered"],
+            "tier_label":          env["tier_label"],
+            "payout_percentage":   env["payout_percentage"],
+            "gross_payout":        env["gross_payout"],
+            "platform_fee":        env["platform_fee"],
+            "net_payout":          env["net_payout"],
+            "risk_loading":        env["risk_loading"],
+            "claim_adjustment":    env["claim_adjustment"],
+            "final_payout":        env["final_payout"],
+            "effective_payout":    env["effective_payout"],
+            "amount_inr":          env["effective_payout"],
+            "exclusion":           env["exclusion"],
+            "fraud_check":         env["fraud_check"],
+            "message":             env["payout_message"],
+            "payout_explanation":  env["payout_explanation"],
+            "delivery":            PAYOUT_DELIVERY,
         },
-
         "actuarial":    env["actuarial"],
         "last_updated": env["timestamp"],
     }
