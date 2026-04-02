@@ -1,0 +1,339 @@
+
+    color: var(--text-muted);
+}
+
+/* ==================================================================
+   FILL-BLUE + OFFLINE DOT
+   ================================================================== */
+.fill-blue { background: linear-gradient(90deg, #4e9eff, #7bb8ff); }
+.api-dot.offline { background: var(--red); animation: none; }
+.hidden { display: none !important; }
+
+/* ==================================================================
+   API STATUS BAR
+   ================================================================== */
+.api-status-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 12px; color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+/* ==================================================================
+   ALERT INFO
+   ================================================================== */
+.alert-info {
+    background: rgba(78,158,255,0.06);
+    border: 1px solid rgba(78,158,255,0.25);
+    color: var(--blue);
+}
+
+/* ==================================================================
+   AI INSIGHTS PANEL
+   ================================================================== */
+.ai-insights-panel {
+    background: linear-gradient(135deg, rgba(245,165,35,0.04) 0%, var(--bg-card) 60%);
+    border: 1px solid rgba(245,165,35,0.22);
+    border-radius: var(--radius-lg);
+    padding: 24px; margin-bottom: 16px;
+    position: relative; overflow: hidden;
+    animation: fadeUp 0.45s ease both;
+}
+.ai-insights-panel::before {
+    content: ''; position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(245,165,35,0.07) 0%, transparent 65%);
+    pointer-events: none;
+}
+.ai-panel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.ai-panel-header h3 { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.ai-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--amber); background: rgba(245,165,35,0.10);
+    border: 1px solid rgba(245,165,35,0.25);
+    border-radius: 99px; padding: 4px 10px; flex-shrink: 0;
+}
+.ai-reason-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 8px; margin-top: 16px;
+}
+.ai-reason {
+    font-size: 13px; line-height: 1.7; color: var(--text-secondary);
+    padding: 12px 14px; background: rgba(0,0,0,0.2);
+    border-radius: var(--radius-sm); border-left: 3px solid var(--border);
+}
+.ai-conf-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+.ai-conf-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 99px; font-size: 12px; font-weight: 600;
+    background: rgba(245,165,35,0.10); border: 1px solid rgba(245,165,35,0.2);
+    color: var(--amber);
+}
+.ai-conf-badge .pulse-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--amber); animation: pulse-green 1.8s infinite;
+}
+
+/* ==================================================================
+   FRAUD PANEL
+   ================================================================== */
+.fraud-score-display { text-align: center; padding: 14px 0 10px; }
+.fraud-score-number {
+    font-family: var(--font-display); font-size: 48px; font-weight: 800;
+    letter-spacing: -2px; line-height: 1; display: block;
+}
+.fraud-score-track {
+    height: 8px; background: var(--border); border-radius: 99px;
+    overflow: hidden; margin: 12px 0 16px;
+}
+.fraud-score-fill { height: 100%; border-radius: 99px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+.verdict-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--font-display); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.06em; padding: 5px 14px; border-radius: 99px; margin-top: 4px;
+}
+.verdict-SAFE { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,217,122,0.3); }
+.verdict-REVIEW {
+    background: rgba(245,165,35,0.10); color: var(--amber);
+    border: 1px solid rgba(245,165,35,0.3);
+    animation: pulse-amber 2s infinite;
+}
+.verdict-BLOCKED {
+    background: var(--red-dim); color: var(--red);
+    border: 1px solid rgba(255,75,92,0.3);
+    animation: fraud-pulse 1.5s infinite;
+}
+@keyframes pulse-amber {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,165,35,0); }
+    50% { box-shadow: 0 0 0 4px rgba(245,165,35,0.12); }
+}
+@keyframes fraud-pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,75,92,0); }
+    50% { box-shadow: 0 0 0 6px rgba(255,75,92,0.15); }
+}
+.fraud-explanation-text {
+    font-size: 12.5px; line-height: 1.65; color: var(--text-secondary);
+    padding: 10px 12px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm);
+}
+
+/* ==================================================================
+   PREDICTED SCORE
+   ================================================================== */
+.predicted-score-display { text-align: center; padding: 12px 0; }
+.predicted-number {
+    font-family: var(--font-display); font-size: 60px; font-weight: 800;
+    letter-spacing: -3px; line-height: 1; display: block;
+}
+.predicted-label {
+    font-size: 11px; color: var(--text-muted); letter-spacing: 0.05em;
+    text-transform: uppercase; margin-top: 6px;
+}
+.predicted-level-badge {
+    display: inline-block; margin-top: 10px; padding: 4px 12px;
+    border-radius: 99px; font-size: 11.5px; font-weight: 700;
+    background: rgba(245,165,35,0.10); color: var(--amber);
+    border: 1px solid rgba(245,165,35,0.2);
+}
+
+/* ==================================================================
+   TREND BADGE
+   ================================================================== */
+.trend-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 99px;
+    font-family: var(--font-display); font-size: 13px; font-weight: 700;
+}
+.trend-arrow { font-size: 16px; }
+.trend-up { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,75,92,0.25); }
+.trend-stable { background: rgba(78,158,255,0.08); color: var(--blue); border: 1px solid rgba(78,158,255,0.2); }
+.trend-down { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,217,122,0.25); }
+
+/* ==================================================================
+   SPARKLINE
+   ================================================================== */
+.sparkline-wrap { display: flex; align-items: flex-end; gap: 3px; height: 36px; padding: 8px 0 4px; }
+.spark-bar { flex: 1; border-radius: 2px 2px 0 0; min-width: 4px; transition: height 0.6s ease; }
+.spark-bar.low { background: var(--green); opacity: 0.7; }
+.spark-bar.medium { background: var(--amber); opacity: 0.8; }
+.spark-bar.high { background: var(--red); opacity: 0.9; }
+
+/* ==================================================================
+   PAYOUT BREAKDOWN
+   ================================================================== */
+.payout-breakdown { display: flex; flex-direction: column; gap: 0; }
+.payout-line {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+}
+.payout-line:last-child { border-bottom: none; }
+.payout-line.deduct .p-val { color: var(--red); }
+.payout-line.final-line {
+    padding-top: 12px; border-top: 2px solid rgba(245,165,35,0.3);
+    border-bottom: none; margin-top: 4px;
+}
+.payout-line.final-line .p-key { font-weight: 700; color: var(--text-primary); font-size: 14px; }
+.payout-line.final-line .p-val { font-size: 18px; font-weight: 800; color: var(--amber); font-family: var(--font-display); }
+.p-key { color: var(--text-secondary); }
+.p-val { font-weight: 600; font-family: var(--font-display); font-size: 14px; color: var(--text-primary); }
+
+/* ==================================================================
+   METRIC GRID (actuarial)
+   ================================================================== */
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.metric-item {
+    background: var(--bg-base); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 14px; transition: border-color 0.2s;
+}
+.metric-item:hover { border-color: rgba(245,165,35,0.2); }
+.metric-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
+}
+.metric-value {
+    font-family: var(--font-display); font-size: 22px; font-weight: 800;
+    color: var(--text-primary); letter-spacing: -0.5px; margin-bottom: 4px;
+}
+.metric-value.amber { color: var(--amber); }
+.metric-value.green { color: var(--green); }
+.metric-value.red { color: var(--red); }
+.metric-sub { font-size: 11px; color: var(--text-muted); }
+
+/* Actuarial probability bar */
+.act-prob-bar-track { height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+.act-prob-bar-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--amber), var(--amber-light));
+    transition: width 1.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Premium adequacy */
+.adequacy-badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 99px; }
+.adequacy-ok { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,217,122,0.2); }
+.adequacy-under { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,75,92,0.2); }
+.adequacy-over { background: rgba(78,158,255,0.08); color: var(--blue); border: 1px solid rgba(78,158,255,0.2); }
+
+/* ==================================================================
+   ANOMALY PANEL
+   ================================================================== */
+.anomaly-panel {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 18px; background: var(--red-dim);
+    border: 1px solid rgba(255,75,92,0.35); border-radius: var(--radius-md);
+    animation: fraud-pulse 1.8s infinite, slideIn 0.4s ease both;
+}
+.anomaly-pulse {
+    width: 12px; height: 12px; border-radius: 50%; background: var(--red);
+    animation: fraud-pulse 1.2s infinite; flex-shrink: 0; margin-top: 3px;
+}
+.anomaly-title { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--red); margin-bottom: 3px; }
+.anomaly-desc { font-size: 12.5px; color: var(--text-secondary); }
+
+/* ==================================================================
+   PROCESSING STEPS
+   ================================================================== */
+.step-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 13px 0; border-bottom: 1px solid var(--border); position: relative;
+}
+.step-item:last-child { border-bottom: none; }
+.step-item:not(:last-child)::after {
+    content: ''; position: absolute; left: 13px; top: 44px;
+    height: calc(100% - 30px); width: 1px; background: var(--border);
+}
+.step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; font-family: var(--font-display);
+    background: var(--bg-base); border: 2px solid var(--border);
+    color: var(--text-muted); flex-shrink: 0; z-index: 1; transition: all 0.3s ease;
+}
+.step-num.done { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+.step-num.active { background: rgba(245,165,35,0.10); border-color: var(--amber); color: var(--amber); box-shadow: 0 0 0 4px rgba(245,165,35,0.07); }
+.step-text { flex: 1; padding-top: 2px; }
+.step-title { font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 2px; }
+.step-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.step-time { font-size: 11px; color: var(--text-muted); flex-shrink: 0; padding-top: 4px; font-family: var(--font-display); }
+
+/* ==================================================================
+   SIMULATOR CONTROLS
+   ================================================================== */
+.sim-control { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.sim-label { font-size: 12.5px; color: var(--text-secondary); width: 130px; flex-shrink: 0; }
+.sim-control input[type=range] { flex: 1; accent-color: var(--amber); cursor: pointer; height: 4px; }
+.sim-value-display { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--amber); min-width: 44px; text-align: right; }
+
+/* ==================================================================
+   TOOLTIP
+   ================================================================== */
+.tooltip-wrap { position: relative; display: inline-flex; align-items: center; }
+.tooltip-icon {
+    width: 14px; height: 14px; border-radius: 50%; background: var(--border);
+    color: var(--text-muted); font-size: 9px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: help; margin-left: 4px; transition: background 0.2s;
+}
+.tooltip-icon:hover { background: rgba(245,165,35,0.2); color: var(--amber); }
+.tooltip-text {
+    display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%); background: #1a2030;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 7px 10px; font-size: 11.5px; color: var(--text-secondary);
+    z-index: 50; box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    pointer-events: none; max-width: 220px; white-space: normal; text-align: center;
+}
+.tooltip-wrap:hover .tooltip-text { display: block; }
+
+/* ==================================================================
+   CRITICAL STATE GLOW
+   ================================================================== */
+@keyframes critical-glow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,75,92,0), 0 4px 24px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 0 20px 2px rgba(255,75,92,0.15), 0 4px 24px rgba(0,0,0,0.4); }
+}
+.card-critical {
+    border-color: rgba(255,75,92,0.35) !important;
+    animation: fadeUp 0.45s ease both, critical-glow 2.4s ease-in-out infinite !important;
+}
+.card-warning { border-color: rgba(245,165,35,0.35) !important; }
+
+/* ==================================================================
+   PIPELINE FLOW INDICATOR
+   ================================================================== */
+.pipeline-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 24px; overflow-x: auto;
+    padding: 16px 0 4px; scrollbar-width: none;
+}
+.pipeline-flow::-webkit-scrollbar { display: none; }
+.pf-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+.pf-bubble {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; font-family: var(--font-display);
+    background: var(--bg-base); border: 2px solid var(--border);
+    color: var(--text-muted); transition: all 0.4s ease; position: relative; z-index: 1;
+}
+.pf-bubble.done { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+.pf-bubble.active { background: rgba(245,165,35,0.10); border-color: var(--amber); color: var(--amber); box-shadow: 0 0 0 5px rgba(245,165,35,0.07); }
+.pf-label { font-size: 10.5px; color: var(--text-muted); text-align: center; white-space: nowrap; max-width: 80px; line-height: 1.3; }
+.pf-label.active { color: var(--amber); font-weight: 600; }
+.pf-label.done { color: var(--text-secondary); }
+.pf-line { width: 40px; height: 2px; background: var(--border); flex-shrink: 0; margin-bottom: 18px; transition: background 0.4s; }
+.pf-line.done { background: rgba(34,217,122,0.35); }
+.pf-line.active { background: rgba(245,165,35,0.35); }
+
+/* ==================================================================
+   LOGOUT BUTTON
+   ================================================================== */
+.btn-logout {
+    background: none; border: 1px solid var(--border); border-radius: 99px;
+    color: var(--text-muted); font-size: 12px; font-family: var(--font-body);
+    padding: 5px 12px; cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    margin-left: 10px;
+}
+.btn-logout:hover { border-color: rgba(255,75,92,0.4); color: var(--red); }
