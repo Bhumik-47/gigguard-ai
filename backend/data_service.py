@@ -9,7 +9,7 @@ from datetime import datetime, date
 import requests # type: ignore
 
 
-API_KEY = "da8a5f211003a5cd5201c5d715520c5d"
+API_KEY = ""
 
 from risk_engine import calculate_risk, RiskResult
 from payout_engine import calculate_payout, CoveragePlan, PayoutResult
