@@ -3,130 +3,71 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GigGuard AI — Gateway</title>
+    <title>GigGuard AI — Worker Portal</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="additional.css" />
     <style>
-        /* Specific layout for the landing/login entry */
-        .gateway-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: var(--bg-base);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Re-using your glow effects for the index */
-        .glow-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            pointer-events: none;
-            z-index: 0;
-        }
-        .glow-1 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(245,165,35,0.08) 0%, transparent 70%); top: -100px; left: -100px; }
-        .glow-2 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(78, 158, 255, 0.06) 0%, transparent 70%); bottom: -50px; right: -50px; }
-
-        .content-frame {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 420px;
-            padding: 20px;
-            animation: fadeUp 0.6s ease out;
-        }
-
-        .welcome-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 40px 32px;
-            text-align: center;
-            box-shadow: var(--shadow-card);
-        }
-
-        .logo-large {
-            margin-bottom: 24px;
-            display: inline-block;
-        }
-
-        .btn-enter {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--amber) 0%, #ff8c3a 100%);
-            color: #0a0c10;
-            text-decoration: none;
-            font-family: var(--font-display);
-            font-weight: 800;
-            border-radius: var(--radius-sm);
-            margin-top: 24px;
-            transition: transform 0.2s, opacity 0.2s;
-            letter-spacing: 0.05em;
-        }
-
-        .btn-enter:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-
-        .nav-map {
-            margin-top: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .nav-map a {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-decoration: none;
-            padding: 8px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            transition: all 0.2s;
-        }
-
-        .nav-map a:hover {
-            border-color: var(--amber-dim);
-            color: var(--amber);
-        }
+        /* Fallback Styles in case CSS is missing */
+        body { background: #0a0c10; color: #eef1f7; font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .login-card { background: #11141b; padding: 40px; border-radius: 20px; border: 1px solid #1e2530; width: 100%; max-width: 400px; text-align: center; }
+        .brand { font-weight: 800; font-size: 24px; margin-bottom: 20px; color: #f5a523; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        input { width: 100%; padding: 12px; background: #0a0c10; border: 1px solid #1e2530; color: white; border-radius: 8px; margin-top: 5px; box-sizing: border-box;}
+        .btn-login { width: 100%; padding: 14px; background: #f5a523; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: #0a0c10; margin-top: 10px; }
+        .demo-box { background: rgba(78, 158, 255, 0.1); border: 1px solid #4e9eff; padding: 15px; border-radius: 8px; font-size: 12px; margin-bottom: 20px; color: #4e9eff; }
     </style>
 </head>
 <body>
-    <div class="glow-orb glow-1"></div>
-    <div class="glow-orb glow-2"></div>
 
-    <div class="gateway-container">
-        <div class="content-frame">
-            <div class="welcome-card">
-                <div class="logo-large">
-                    <svg width="60" height="60" viewBox="0 0 40 40" fill="none">
-                        <path d="M20 2L5 8.5V19C5 28 11.5 36.5 20 39C28.5 36.5 35 28 35 19V8.5L20 2Z" fill="#f5a523" fill-opacity="0.15" stroke="#f5a523" stroke-width="1.5" />
-                        <path d="M13.5 20L18 24.5L26.5 14" stroke="#f5a523" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </div>
-                <h1 style="font-family: var(--font-display); font-size: 24px; margin-bottom: 8px;">GigGuard <span style="color:var(--amber)">AI</span></h1>
-                <p style="color: var(--text-secondary); font-size: 14px;">Parametric Insurance for the Gig Economy</p>
-                
-                <a href="login.html" class="btn-enter">OPEN WORKER PORTAL</a>
-
-                <div class="nav-map">
-                    <a href="dashboard.html">Dashboard</a>
-                    <a href="risk-monitor.html">Risk Monitor</a>
-                    <a href="payout.html">Payout Sim</a>
-                    <a href="login.html">Logout / Login</a>
-                </div>
-            </div>
-            
-            <p style="text-align:center; font-size: 10px; color: var(--text-muted); margin-top: 20px; letter-spacing: 0.1em;">
-                HACKATHON 2025 · AI ENGINE ONLINE
-            </p>
+    <div class="login-card">
+        <div class="brand">GigGuard AI</div>
+        
+        <div class="demo-box">
+            <strong>Hackathon Demo:</strong> Use Worker ID <b>SWG-09124</b> to access the dashboard.
         </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Worker ID</label>
+                <input type="text" id="workerId" value="SWG-09124" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" value="demo2026" required>
+            </div>
+            <button type="submit" class="btn-login" id="loginBtn">Sign In to Dashboard</button>
+        </form>
+
+        <p id="errorMsg" style="color: #ff4b5c; font-size: 12px; margin-top: 10px; display: none;">Invalid credentials.</p>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('loginBtn');
+            const wid = document.getElementById('workerId').value;
+
+            // Show loading state
+            btn.innerText = "Authenticating...";
+            btn.disabled = true;
+
+            // Logic: Bypass local API for Vercel demo
+            setTimeout(() => {
+                if (wid === "SWG-09124") {
+                    // Save session so other pages work
+                    sessionStorage.setItem('gigguard_auth', 'true');
+                    sessionStorage.setItem('gigguard_worker_id', wid);
+                    
+                    // REDIRECT (Ensure dashboard.html is in the same folder as this file!)
+                    window.location.href = 'dashboard.html';
+                } else {
+                    document.getElementById('errorMsg').style.display = 'block';
+                    btn.innerText = "Sign In to Dashboard";
+                    btn.disabled = false;
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
