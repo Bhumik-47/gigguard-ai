@@ -1,155 +1,145 @@
-# GigGuard AI
+ #GigGuard AI
 
-Parametric insurance system designed to protect gig workers from income loss caused by environmental disruptions.
+Real-time AI-powered parametric insurance system for gig workers that automatically calculates disruption risk and triggers payouts based on live environmental conditions.
 
 ---
 
 ## Problem
 
-Delivery partners (Swiggy, Zomato, Blinkit, etc.) rely on daily earnings. External conditions such as heavy rainfall, high pollution, and strong winds can reduce their working hours significantly.
+Gig workers such as delivery partners are highly vulnerable to environmental disruptions like heavy rainfall, poor air quality, and extreme weather conditions. These directly impact their ability to work and earn.
 
-In many cases, workers lose up to 20–30% of their income due to factors beyond their control, with no immediate financial protection.
+Traditional insurance systems:
+- Require manual claims
+- Are slow and delayed
+- Do not operate in real time
 
 ---
 
 ## Solution
 
-GigGuard AI provides a parametric insurance model that monitors environmental conditions and automatically triggers payouts when disruption thresholds are met.
+GigGuard AI introduces a parametric insurance model where:
 
-The system removes the need for claim filing by using predefined triggers and real-time data to determine eligibility.
-
----
-
-## Target User
-
-* Platform-based delivery partners
-* Urban regions (e.g., Delhi NCR)
-* Workers dependent on daily or weekly income
+- Environmental data is monitored in real time  
+- Risk is computed instantly  
+- Payouts are triggered automatically  
+- No manual claim process is required  
 
 ---
 
-## Pricing Model
+## Features
 
-| Plan          | Premium  | Coverage | Claims           |
-| ------------- | -------- | -------- | ---------------- |
-| Weekly Shield | ₹49/week | ₹2500    | Up to 2 per week |
-
-The pricing model aligns with the weekly earning cycle of gig workers.
-
----
-
-## Parametric Triggers
-
-Payouts are triggered when environmental conditions exceed defined limits:
-
-* Rainfall > 50 mm/hr
-* AQI > 250
-* Wind Speed > 45 km/h
+### Real-Time Environmental Data
+- Integrated with OpenWeatherMap API  
+- Fetches:
+  - Rainfall (mm/hr)
+  - Wind speed (km/h)
+  - Weather conditions  
+- Converts live data into risk inputs  
 
 ---
 
-## Risk Calculation
+### AI-Based Risk Engine
 
-```id="y7nh5g"
-risk_score = 0.5 × rainfall + 0.3 × AQI + 0.2 × wind_speed
-```
+Risk score computed using weighted model:
 
-Each parameter is normalized between safe and critical thresholds before computing the final score.
+- Rainfall → 50%  
+- AQI (derived) → 30%  
+- Wind Speed → 20%  
 
----
-
-## Payout Logic
-
-| Risk Score  | Payout          |
-| ----------- | --------------- |
-| < 0.60      | No payout       |
-| 0.60 – 0.74 | 30% of coverage |
-| 0.75 – 0.89 | 50% of coverage |
-| ≥ 0.90      | 80% of coverage |
-
-A small platform fee is deducted from the final payout.
+Outputs:
+- Risk Score (0–1)
+- Risk Level: LOW / MEDIUM / HIGH / CRITICAL  
 
 ---
 
-## System Flow
+### Parametric Payout Engine
 
-User → Frontend → Backend API → Environmental Data → Risk Engine → Payout Engine → Result
+| Risk Score | Payout |
+|------------|--------|
+| < 0.60 | 0% |
+| 0.60–0.75 | 30% |
+| 0.75–0.90 | 50% |
+| ≥ 0.90 | 80% |
+
+- Instant payout calculation  
+- No claim required  
 
 ---
 
-## Key Features
+### AI Explanation Layer
 
-* Risk assessment based on environmental conditions
-* Parametric insurance model with predefined triggers
-* Automatic payout calculation without manual claims
-* Integration with external data sources (weather APIs)
-* Dashboard for monitoring risk and payouts
+- Explains payout decisions  
+- Identifies dominant risk factors  
+- Improves transparency and trust  
+
+---
+
+### Dashboard
+
+- Worker profile and plan details  
+- Live environmental data  
+- Risk score visualization  
+- Payout status tracking  
+
+---
+
+## How It Works
+
+1. Fetch real-time environmental data  
+2. Normalize values  
+3. Compute weighted risk score  
+4. Determine payout tier  
+5. Trigger payout  
+6. Display results on dashboard  
 
 ---
 
 ## Tech Stack
 
-* Frontend: HTML, CSS
-* Backend: FastAPI (Python)
-* External APIs: OpenWeatherMap
-* Data Processing: Python services
+### Backend
+- FastAPI (Python)  
+- Risk Engine  
+- Payout Engine  
 
----
+### Frontend
+- HTML  
+- CSS  
+- JavaScript  
 
-## Project Structure
-
-```
-gigguard-ai/
-├── backend/
-│   ├── main.py
-│   ├── risk_engine.py
-│   ├── payout_engine.py
-│   ├── data_service.py
-│   ├── requirements.txt
-│
-├── frontend/
-│   ├── index.html
-│   ├── risk-monitor.html
-│   ├── payout.html
-│   ├── style.css
-```
-
----
-
-## Running the Project
-
-```
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
-Access API at: https://gigguard-ai-three.vercel.app/
+### APIs
+- OpenWeatherMap  
 
 ---
 
 ## API Endpoints
 
-* `/dashboard` → Worker dashboard data
-* `/risk` → Current environmental risk
-* `/simulate` → Random disruption scenario
-* `/calculate` → Custom risk and payout
+- `/dashboard` → Worker + plan + risk data  
+- `/risk` → Environmental risk details  
+- `/simulate` → Scenario simulation  
+- `/calculate` → Custom risk calculation  
 
 ---
 
-## Design Considerations
+## Repository
 
-* Focus strictly on income protection (no health, vehicle, or life coverage)
-* Weekly pricing model aligned with gig economy patterns
-* Simple, automated workflow to reduce friction for workers
+https://github.com/Bhumik-47/gigguard-ai.git
 
 ---
 
-## Future Scope
+## Run Locally
 
-* Real-time AQI integration
-* Location-based risk personalization
-* Mobile application interface
-* Integration with gig platforms for onboarding
+```bash
+git clone https://github.com/Bhumik-47/gigguard-ai.git
+cd gigguard-ai/backend
+pip install fastapi uvicorn requests
+python3 -m uvicorn main:app --reload
 
+Open:https://gigguard-ai.netlify.app/
 ---
+##Future Scope
+1)Real AQI API integration
+2)ML-based predictive risk modeling
+3)Mobile application
+4)Payment gateway integration
+
+------------------------------------------------------------
