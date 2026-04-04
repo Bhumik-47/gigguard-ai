@@ -9,7 +9,12 @@ from datetime import datetime, date
 import requests # type: ignore
 
 
-API_KEY = ""
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY = os.getenv("API_KEY")
 
 from risk_engine import calculate_risk, RiskResult
 from payout_engine import calculate_payout, CoveragePlan, PayoutResult
