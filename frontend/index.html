@@ -1,38 +1,155 @@
-<script>
-    // 1. Skip login if already authenticated
-    if (sessionStorage.getItem('gigguard_auth') === 'true') {
-        window.location.replace('dashboard.html');
-    }
+<!DOCTYPE html>
+<html lang="en">
 
-    const $ = id => document.getElementById(id);
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GigGuard AI — Secure Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Essential inline styles to prevent initial flicker */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-base: #0a0c10;
+            --amber: #f5a523;
+            --text-primary: #eef1f7;
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
+            --radius-sm: 8px;
+        }
+        body {
+            background: var(--bg-base);
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+    </style>
+</head>
 
-    // 2. Demo Autofill
-    if ($('demoBtn')) {
-        $('demoBtn').addEventListener('click', () => {
-            $('workerId').value = 'SWG-09124';
-            $('password').value = 'demo2025';
-            $('loginForm').dispatchEvent(new Event('submit'));
-        });
-    }
+<body>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
 
-    // 3. Login Submission
-    $('loginForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const btn = $('loginBtn');
-        btn.disabled = true;
-        btn.innerHTML = 'Authenticating...';
+    <div class="login-wrapper">
+        <div class="login-left">
+            <div class="brand-block">
+                <svg class="brand-shield" viewBox="0 0 40 40" fill="none">
+                    <path d="M20 2L5 8.5V19C5 28 11.5 36.5 20 39C28.5 36.5 35 28 35 19V8.5L20 2Z" fill="#f5a523" fill-opacity="0.15" stroke="#f5a523" stroke-width="1.5" />
+                    <path d="M13.5 20L18 24.5L26.5 14" stroke="#f5a523" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span class="brand-name">GigGuard <span>AI</span></span>
+            </div>
 
-        setTimeout(() => {
-            // Set the flags your script.js looks for
-            sessionStorage.setItem('gigguard_auth', 'true');
-            sessionStorage.setItem('gigguard_worker_id', $('workerId').value);
-            
-            $('loginForm').style.display = 'none';
-            $('loginSuccess').classList.add('visible');
+            <div class="left-main">
+                <div class="left-tag"><span class="dot"></span> AI-Powered Insurance Platform</div>
+                <h1 class="left-headline">Parametric Insurance for the <span class="hl">Gig Economy</span></h1>
+                <p class="left-sub">Real-time AI risk scoring, automatic parametric payouts, and fraud-proof claim processing.</p>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon amber">⚡</div>
+                        <div class="feature-text">
+                            <div class="f-title">AI Risk Engine</div>
+                            <div class="f-desc">97% R² trend accuracy using live IMD data.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <div class="login-right">
+            <div class="login-card">
+                <div class="login-card-header">
+                    <div class="login-card-title">Worker Portal Login</div>
+                    <div class="login-card-sub">Sign in to your GigGuard coverage dashboard</div>
+                </div>
+
+                <div class="demo-notice">
+                    <strong>Hackathon Demo:</strong> Use <strong>SWG-09124</strong> and any password.
+                </div>
+
+                <div class="form-error" id="formError">Invalid Worker ID or password.</div>
+
+                <form id="loginForm" autocomplete="off">
+                    <div class="form-group">
+                        <label class="form-label">Worker ID</label>
+                        <input class="form-input" id="workerId" type="text" placeholder="e.g. SWG-09124" value="SWG-09124" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="form-input-wrap">
+                            <input class="form-input" id="password" type="password" placeholder="Enter password" required />
+                            <button type="button" class="pw-toggle" id="pwToggle">👁</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="loginBtn">Sign In to Dashboard</button>
+                    <div class="form-divider">or</div>
+                    <button type="button" class="btn-demo" id="demoBtn">⚡ Quick Demo Access</button>
+                </form>
+
+                <div class="login-success" id="loginSuccess">
+                    <div class="success-icon">✓</div>
+                    <div>
+                        <div style="font-weight:700;">Welcome back</div>
+                        <div style="font-size:13px; color:#8a94a6;">Redirecting to dashboard...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gatekeeper: If session exists, go straight to dashboard
+        if (sessionStorage.getItem('gigguard_auth') === 'true') {
+            window.location.replace('dashboard.html');
+        }
+
+        const $ = id => document.getElementById(id);
+
+        // Password Visibility
+        if($('pwToggle')) {
+            $('pwToggle').addEventListener('click', () => {
+                const pass = $('password');
+                pass.type = pass.type === 'password' ? 'text' : 'password';
+                $('pwToggle').textContent = pass.type === 'password' ? '👁' : '🙈';
+            });
+        }
+
+        // Quick Demo Fill
+        if($('demoBtn')) {
+            $('demoBtn').addEventListener('click', () => {
+                $('workerId').value = 'SWG-09124';
+                $('password').value = 'demo2025';
+                $('loginForm').dispatchEvent(new Event('submit'));
+            });
+        }
+
+        // Login Handler
+        $('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const loginBtn = $('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = 'Authenticating...';
+
+            // Simulate Auth process
             setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 800);
-        }, 1000);
-    });
-</script>
+                // Set keys exactly as script.js expects
+                sessionStorage.setItem('gigguard_auth', 'true');
+                sessionStorage.setItem('gigguard_worker_id', $('workerId').value);
+
+                $('loginForm').style.display = 'none';
+                $('loginSuccess').classList.add('visible');
+
+                // Redirect to the EXACT filename
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 800);
+            }, 1100);
+        });
+    </script>
+</body>
+</html>
