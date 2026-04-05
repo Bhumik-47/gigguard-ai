@@ -1,4 +1,4 @@
- #GigGuard AI
+ GigGuard AI
 
 Real-time AI-powered parametric insurance system for gig workers that automatically calculates disruption risk and triggers payouts based on live environmental conditions.
 
@@ -134,7 +134,7 @@ cd gigguard-ai/backend
 pip install fastapi uvicorn requests
 python3 -m uvicorn main:app --reload
 
-Open:https://gigguard-ai.netlify.app/
+Open:[https://gigguard-ai.netlify.app/](https://gigguard-ai-qv7z-e8teghx5v-bhumikkannu-3503s-projects.vercel.app/)
 ---
 ##Future Scope
 1)Real AQI API integration
