@@ -14,8 +14,13 @@
  * @param {object} opts - { prefix, suffix, duration, locale, decimals }
  */
 // Add this to the TOP of script.js
+// TOP OF script.js
 (function() {
-    if (!sessionStorage.getItem('gigguard_auth')) {
+    const auth = sessionStorage.getItem('gigguard_auth');
+    console.log("Checking Auth Status:", auth); // Debugging line
+
+    if (auth !== 'true') {
+        console.warn("Auth failed, redirecting to login...");
         window.location.replace('index.html');
     }
 })();
