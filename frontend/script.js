@@ -1,64 +1,50 @@
 /**
- * GigGuard AI — Stable Hackathon Version
+ * GigGuard AI — Stable script.js
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. --- AUTH CHECK ---
+    // 1. --- AUTHENTICATION CHECK ---
     const auth = sessionStorage.getItem('gigguard_auth');
     const path = window.location.pathname;
+    
+    // Safety check: Don't redirect if we are already on the login page
     const isLogin = path.includes('index.html') || path.endsWith('/') || path === '';
 
-    // If on a dashboard page without being logged in, redirect to index
     if (!isLogin && auth !== 'true') {
+        console.warn("Auth failed, redirecting...");
         window.location.replace('index.html');
         return; 
     }
 
-    // 2. --- DASHBOARD LOADING ---
-    // Only attempts to fetch if the UI elements exist
+    // 2. --- INITIALIZE DASHBOARD ---
+    // Only runs if the elements exist on the page
     if (document.getElementById('apiStatusText')) {
         fetchAPI('/dashboard', (data) => {
-            if (data && data.current_risk) {
-                updateUI(data.current_risk);
-            }
+            renderAICard(data.current_risk);
+            renderFraudCard(data.current_risk);
         }, () => {
-            console.log("Running in Demo Mode (Backend Offline)");
+            console.log("Demo Mode Active");
         });
     }
 
-    // 3. --- UI INITIALIZATION ---
-    runAnimations();
+    // 3. --- UI EFFECTS ---
+    animateScoreBars();
 });
 
-/* --- Core Functions --- */
+/* --- Core Logic --- */
 
 async function fetchAPI(endpoint, onSuccess, onFallback) {
     try {
-        // Change this URL if you deploy your backend to a real server
         const res = await fetch(`http://127.0.0.1:8000${endpoint}`);
-        if (!res.ok) throw new Error('API Error');
+        if (!res.ok) throw new Error();
         const data = await res.json();
         onSuccess(data);
-    } catch (err) {
+    } catch (e) {
         if (onFallback) onFallback();
     }
 }
 
-function updateUI(riskData) {
-    const textEl = document.getElementById('aiExplainText');
-    if (textEl) {
-        const score = riskData.risk_score <= 1 ? Math.round(riskData.risk_score * 100) : riskData.risk_score;
-        textEl.textContent = `AI Risk Engine evaluated disruption at ${score}/100.`;
-    }
-    
-    const verdictEl = document.getElementById('fraudVerdict');
-    if (verdictEl) {
-        verdictEl.textContent = "SAFE";
-        verdictEl.className = "fraud-verdict fraud-verdict-safe";
-    }
-}
-
-function runAnimations() {
+function animateScoreBars() {
     document.querySelectorAll('.score-bar-fill').forEach(el => {
         const target = el.dataset.target ? el.dataset.target + '%' : '70%';
         el.style.width = '0%';
@@ -66,7 +52,17 @@ function runAnimations() {
     });
 }
 
-function logout() {
-    sessionStorage.clear();
-    window.location.replace('index.html');
+function renderAICard(data) {
+    const textEl = document.getElementById('aiExplainText');
+    if (textEl && data) {
+        textEl.textContent = `Risk evaluated at ${Math.round(data.risk_score * 100)}/100.`;
+    }
+}
+
+function renderFraudCard(data) {
+    const verdictEl = document.getElementById('fraudVerdict');
+    if (verdictEl) {
+        verdictEl.textContent = "SAFE";
+        verdictEl.className = "fraud-verdict fraud-verdict-safe";
+    }
 }
