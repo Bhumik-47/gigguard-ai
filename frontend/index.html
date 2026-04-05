@@ -1,57 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GigGuard AI — Secure Login</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <script>
-        // Redirect if already logged in
-        if (sessionStorage.getItem('gigguard_auth') === 'true') {
-            window.location.replace('dashboard.html');
-        }
+<script>
+    // 1. Skip login if already authenticated
+    if (sessionStorage.getItem('gigguard_auth') === 'true') {
+        window.location.replace('dashboard.html');
+    }
 
-        const $ = id => document.getElementById(id);
+    const $ = id => document.getElementById(id);
 
-        // UI Toggles
-        if($('pwToggle')) {
-            $('pwToggle').addEventListener('click', function () {
-                const inp = $('password');
-                inp.type = inp.type === 'text' ? 'password' : 'text';
-                this.textContent = inp.type === 'text' ? '🙈' : '👁';
-            });
-        }
+    // 2. Demo Autofill
+    if ($('demoBtn')) {
+        $('demoBtn').addEventListener('click', () => {
+            $('workerId').value = 'SWG-09124';
+            $('password').value = 'demo2025';
+            $('loginForm').dispatchEvent(new Event('submit'));
+        });
+    }
 
-        // Demo Fill
-        if($('demoBtn')) {
-            $('demoBtn').addEventListener('click', () => {
-                $('workerId').value = 'SWG-09124';
-                $('password').value = 'demo2025';
-                $('loginForm').dispatchEvent(new Event('submit'));
-            });
-        }
+    // 3. Login Submission
+    $('loginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const btn = $('loginBtn');
+        btn.disabled = true;
+        btn.innerHTML = 'Authenticating...';
 
-        // Login Logic
-        $('loginForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const btn = $('loginBtn');
-            btn.disabled = true;
-            btn.innerHTML = 'Authenticating...';
+        setTimeout(() => {
+            // Set the flags your script.js looks for
+            sessionStorage.setItem('gigguard_auth', 'true');
+            sessionStorage.setItem('gigguard_worker_id', $('workerId').value);
+            
+            $('loginForm').style.display = 'none';
+            $('loginSuccess').classList.add('visible');
 
             setTimeout(() => {
-                sessionStorage.setItem('gigguard_auth', 'true');
-                sessionStorage.setItem('gigguard_worker_id', $('workerId').value);
-                
-                $('loginForm').style.display = 'none';
-                $('loginSuccess').classList.add('visible');
-
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 800);
-            }, 1000);
-        });
-    </script>
-</body>
-</html>
+                window.location.href = 'dashboard.html';
+            }, 800);
+        }, 1000);
+    });
+</script>
