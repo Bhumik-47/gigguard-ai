@@ -13,6 +13,12 @@
  * @param {number} target - Final numeric value
  * @param {object} opts - { prefix, suffix, duration, locale, decimals }
  */
+// Add this to the TOP of script.js
+(function() {
+    if (!sessionStorage.getItem('gigguard_auth')) {
+        window.location.replace('index.html');
+    }
+})();
 function animateNumber(el, target, opts = {}) {
     const { prefix = '', suffix = '', duration = 1100, locale = 'en-IN', decimals = 0 } = opts;
     const startTime = performance.now();
