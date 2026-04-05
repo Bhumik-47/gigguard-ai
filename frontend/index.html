@@ -1,63 +1,57 @@
-<script>
-    // 1. Pre-check: If already authenticated, skip login and go to dashboard
-    // Use window.location.replace to prevent the login page from staying in history
-    if (sessionStorage.getItem('gigguard_auth') === 'true') {
-        window.location.replace('dashboard.html');
-    }
-
-    const $ = id => document.getElementById(id);
-
-    // Password show/hide toggle
-    $('pwToggle').addEventListener('click', function () {
-        const inp = $('password');
-        const isText = inp.type === 'text';
-        inp.type = isText ? 'password' : 'text';
-        this.textContent = isText ? '👁' : '🙈';
-    });
-
-    // Demo quick-fill helper
-    $('demoBtn').addEventListener('click', function () {
-        $('workerId').value = 'SWG-09124';
-        $('password').value = 'demo2025';
-        // Trigger the submit event programmatically
-        $('loginForm').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-    });
-
-    // Main Form Submission Logic
-    $('loginForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const wid = $('workerId').value.trim();
-        const pw = $('password').value.trim();
-
-        // Reset error states
-        $('formError').classList.remove('visible');
-
-        if (!wid || !pw) {
-            $('formError').textContent = 'Please enter both Worker ID and password.';
-            $('formError').classList.add('visible');
-            return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GigGuard AI — Secure Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <script>
+        // Redirect if already logged in
+        if (sessionStorage.getItem('gigguard_auth') === 'true') {
+            window.location.replace('dashboard.html');
         }
 
-        // Show loading state on the button
-        const btn = $('loginBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="btn-spinner"></span>Authenticating...';
+        const $ = id => document.getElementById(id);
 
-        // Simulate a network delay for authentication
-        setTimeout(function () {
-            // Set the session storage keys that script.js looks for
-            sessionStorage.setItem('gigguard_auth', 'true');
-            sessionStorage.setItem('gigguard_worker_id', wid);
+        // UI Toggles
+        if($('pwToggle')) {
+            $('pwToggle').addEventListener('click', function () {
+                const inp = $('password');
+                inp.type = inp.type === 'text' ? 'password' : 'text';
+                this.textContent = inp.type === 'text' ? '🙈' : '👁';
+            });
+        }
 
-            // Update UI to show success
-            $('loginForm').style.display = 'none';
-            $('loginSuccess').classList.add('visible');
+        // Demo Fill
+        if($('demoBtn')) {
+            $('demoBtn').addEventListener('click', () => {
+                $('workerId').value = 'SWG-09124';
+                $('password').value = 'demo2025';
+                $('loginForm').dispatchEvent(new Event('submit'));
+            });
+        }
 
-            // Final Redirect: Ensure this filename is exactly 'dashboard.html' 
-            // on your file system (no double .html.html)
-            setTimeout(function () {
-                window.location.href = 'dashboard.html';
-            }, 900);
-        }, 1100);
-    });
-</script>
+        // Login Logic
+        $('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = $('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Authenticating...';
+
+            setTimeout(() => {
+                sessionStorage.setItem('gigguard_auth', 'true');
+                sessionStorage.setItem('gigguard_worker_id', $('workerId').value);
+                
+                $('loginForm').style.display = 'none';
+                $('loginSuccess').classList.add('visible');
+
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 800);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
