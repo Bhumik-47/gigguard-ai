@@ -1,4 +1,4 @@
-UPDATED DEPLOY LINK : https://gigguard-ai-qv7z-e8teghx5v-bhumikkannu-3503s-projects.vercel.app/
+UPDATED DEPLOY LINK : gigguard-ai.wuaze.com
  
  GigGuard AI
 
