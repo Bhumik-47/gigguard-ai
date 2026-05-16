@@ -17,7 +17,7 @@ New fields in v4 responses
   fraud_check.fraud_score (0-1) / fraud_flag (bool) / fraud_explanation
 
 Run:
-  uvicorn main:app --reload
+  uvicorn backend.main:app --reload
 """
 
 from fastapi import FastAPI,APIRouter
