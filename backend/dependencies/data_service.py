@@ -16,8 +16,8 @@ load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
 
-from risk_engine import calculate_risk, RiskResult
-from payout_engine import calculate_payout, CoveragePlan, PayoutResult
+from backend.dependencies.risk_engine import calculate_risk, RiskResult
+from backend.dependencies.payout_engine import calculate_payout, CoveragePlan, PayoutResult
 
 
 # ---------------------------------------------------------------------------

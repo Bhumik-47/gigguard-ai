@@ -42,7 +42,7 @@ from typing import Optional, TYPE_CHECKING
 # Import buffer from risk_engine for pattern analysis
 # Using a lazy import to avoid circular dependency
 def _get_buffer():
-    from risk_engine import RollingRiskBuffer
+    from backend.dependencies.risk_engine import RollingRiskBuffer
     return RollingRiskBuffer.get()
 
 
