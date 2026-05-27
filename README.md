@@ -136,7 +136,6 @@ cd gigguard-ai/backend
 pip install fastapi uvicorn requests
 python3 -m uvicorn main:app --reload
 
-Open:https://gigguard-ai-qv7z-e8teghx5v-bhumikkannu-3503s-projects.vercel.app/
 ---
 ##Future Scope
 1)Real AQI API integration
