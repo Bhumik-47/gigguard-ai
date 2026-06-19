@@ -1,0 +1,26 @@
+# Testing and development dependencies for GigGuard AI
+
+# Testing
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-asyncio==0.23.2
+pytest-xdist==3.5.0
+
+# Code Quality
+black==23.12.1
+flake8==6.1.0
+isort==5.13.2
+pylint==3.0.3
+
+# Security
+bandit==1.7.5
+safety==2.3.5
+
+# Coverage
+coverage==7.4.0
+
+# Type checking
+mypy==1.7.1
+
+# API Testing
+httpx==0.25.2
