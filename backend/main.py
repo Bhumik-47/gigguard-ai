@@ -20,8 +20,8 @@ Run:
   uvicorn backend.main:app --reload
 """
 
-from fastapi import FastAPI,APIRouter
-from .api.endpoints import dashboard,calculate,risk,simulate,root
+from fastapi import FastAPI, APIRouter
+from .api.endpoints import dashboard, calculate, risk, simulate, root, monitoring
 
 
 # ---------------------------------------------------------------------------
@@ -34,9 +34,10 @@ app = FastAPI(
         "Parametric insurance for gig workers. "
         "v4: Rolling-window trend detection · Z-score anomaly detection · "
         "Predictive risk scoring · Dynamic premium pricing · "
-        "Risk-loaded payouts · Fraud intelligence with pattern memory."
+        "Risk-loaded payouts · Fraud intelligence with pattern memory. "
+        "Enhanced with load balancing, caching, and performance monitoring."
     ),
-    version="4.0.0",
+    version="4.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -52,6 +53,7 @@ api_router.include_router(simulate.router)
 api_router.include_router(risk.router)
 api_router.include_router(calculate.router)
 api_router.include_router(root.router)
+api_router.include_router(monitoring.router)
 
-    
+
 app.include_router(api_router)
