@@ -20,12 +20,9 @@ Traditional insurance mechanisms fundamentally fail the gig economy. They requir
 2. [The Problem & The Solution](#-the-problem--the-solution)
 3. [System Architecture](#-system-architecture)
 4. [Tech Stack Breakdown](#-tech-stack-breakdown)
-5. [API Specification](#-api-specification)
-6. [Installation & Local Development](#-installation--local-development)
-7. [Comprehensive Configuration Guide](#-comprehensive-configuration-guide)
-8. [Future Roadmap](#-future-roadmap)
-9. [Open Source & Contribution Workflows](#-open-source--contribution-workflows)
-10. [License & Compliance](#-license--compliance)
+5. [Installation & Local Development](#-installation--local-development)
+6. [Future Roadmap](#-future-roadmap)
+
 
 ---
 
