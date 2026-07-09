@@ -90,7 +90,7 @@ GigGuard AI relies on a modular microservices architecture designed to scale sea
 
 4.AI Policy Evaluator: Generates risk ratings and runs validation routines to identify systemic exploitation patterns.
 
-
+----------------------------------------------------------------------------------------------------------------------------------------
 
 🛠️ Tech Stack Breakdown
 
@@ -109,7 +109,7 @@ Data Ecosystem
 
 ->Gemini API integration: Empowers the platform with automated text analytics, context-driven claim indexing, and risk evaluation loops.
 
-
+------------------------------------------------------------------------------------------------------------------------------------------
 
 📦 Installation & Local Development
 Follow this step-by-step technical pipeline to configure and execute the complete GigGuard AI system within an isolated workspace environment.
@@ -163,6 +163,7 @@ INFO:     Started server process [47002], PID: 47002
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 
+----------------------------------------------------------------------------------------------------------------------------------------
 
 🔮 Future Roadmap
 We are aiming to expand GigGuard AI into an enterprise-grade platform. The following structural milestones are actively mapped into our issue lifecycle tracking schemas:
@@ -191,7 +192,7 @@ Phase 4: Production Payment Integration 💳
 
 
 
-
+-----------------------------------------------------------------------------------------------------------------------------------------
 
 
 
