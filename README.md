@@ -79,7 +79,7 @@ GigGuard AI relies on a modular microservices architecture designed to scale sea
     │ Weather/AQI Engine│   │ Gemini Core │   │ Auth & State Manager│
     │  (Live Data Sync) │   │ (Risk Match)│   │   (Firebase SDK)   │
     └───────────────────┘   └─────────────┘   └────────────────────┘
-
+```
 
 
 1.Client Layer: A reactive frontend interface where gig workers view live weather hazard zones, buy policies, and monitor their active claims feed.
