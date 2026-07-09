@@ -65,7 +65,7 @@ GigGuard AI constructs an active digital shield. A rider buys an inexpensive pol
 ## 🏗️ System Architecture
 
 GigGuard AI relies on a modular microservices architecture designed to scale seamlessly under heavy concurrent API requests when major regional weather events unfold.
-'
+```text
        ┌────────────────────────────────────────────────────────┐
        │                   React Frontend UI                    │
        └───────────────────────────┬────────────────────────────┘
