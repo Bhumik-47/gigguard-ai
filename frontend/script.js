@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isLogin && auth !== 'true') {
         console.warn("Auth failed, redirecting...");
         window.location.replace('index.html');
-        return; 
+        return;
     }
 
     // 2. --- INITIALIZE DASHBOARD ---
@@ -36,11 +36,30 @@ document.addEventListener("DOMContentLoaded", () => {
 async function fetchAPI(endpoint, onSuccess, onFallback) {
     try {
         const res = await fetch(`http://127.0.0.1:8000${endpoint}`);
-        if (!res.ok) throw new Error();
+
+        if (!res.ok) {
+    throw new Error(
+        `Request to '${endpoint}' failed with HTTP ${res.status}: ${res.statusText}`
+    );
+}
+
         const data = await res.json();
-        onSuccess(data);
-    } catch (e) {
-        if (onFallback) onFallback();
+
+        if (typeof onSuccess === "function") {
+            onSuccess(data);
+        }
+    } catch (error) {
+        console.error(`Failed to fetch '${endpoint}':`, error);
+
+        const statusElement = document.getElementById("apiStatusText");
+
+        if (statusElement) {
+            statusElement.textContent = "Backend Offline (Demo Mode)";
+        }
+
+        if (typeof onFallback === "function") {
+            onFallback();
+        }
     }
 }
 
@@ -48,12 +67,15 @@ function animateScoreBars() {
     document.querySelectorAll('.score-bar-fill').forEach(el => {
         const target = el.dataset.target ? el.dataset.target + '%' : '70%';
         el.style.width = '0%';
-        setTimeout(() => { el.style.width = target; }, 300);
+        setTimeout(() => {
+            el.style.width = target;
+        }, 300);
     });
 }
 
 function renderAICard(data) {
     const textEl = document.getElementById('aiExplainText');
+
     if (textEl && data) {
         textEl.textContent = `Risk evaluated at ${Math.round(data.risk_score * 100)}/100.`;
     }
@@ -61,6 +83,7 @@ function renderAICard(data) {
 
 function renderFraudCard(data) {
     const verdictEl = document.getElementById('fraudVerdict');
+
     if (verdictEl) {
         verdictEl.textContent = "SAFE";
         verdictEl.className = "fraud-verdict fraud-verdict-safe";
