@@ -20,9 +20,9 @@ Run:
   uvicorn backend.main:app --reload
 """
 
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Depends
 from .api.endpoints import dashboard, calculate, risk, simulate, root, monitoring
-
+from middleware.auth import verify_firebase_token
 
 # ---------------------------------------------------------------------------
 # App
@@ -46,14 +46,29 @@ from backend.core.config import configure_middleware
 
 configure_middleware(app)
 
+# ---------------------------------------------------------------------------
+# API Router with Firebase Authentication Protection
+# ---------------------------------------------------------------------------
 
 api_router = APIRouter()
+
+# Public routers (no authentication required)
 api_router.include_router(dashboard.router)
-api_router.include_router(simulate.router)
-api_router.include_router(risk.router)
-api_router.include_router(calculate.router)
-api_router.include_router(root.router)
+api_router.include_router(root.router)          # contains /health, /environment
 api_router.include_router(monitoring.router)
 
+# Protected routers – require valid Firebase token
+api_router.include_router(
+    simulate.router,
+    dependencies=[Depends(verify_firebase_token)]
+)
+api_router.include_router(
+    risk.router,
+    dependencies=[Depends(verify_firebase_token)]
+)
+api_router.include_router(
+    calculate.router,
+    dependencies=[Depends(verify_firebase_token)]
+)
 
 app.include_router(api_router)
