@@ -21,9 +21,9 @@ Run:
 """
 
 from fastapi import FastAPI, APIRouter, Depends
-from .api.endpoints import dashboard, calculate, risk, simulate, root, monitoring
-from middleware.auth import verify_firebase_token
-from data.pilot_zones import PILOT_ZONES, find_nearest_zone, zones_by_city
+from backend.api.endpoints import dashboard, calculate, risk, simulate, root, monitoring
+from backend.middleware.auth import verify_firebase_token
+from backend.data.pilot_zones import PILOT_ZONES, find_nearest_zone, zones_by_city
 
 # ---------------------------------------------------------------------------
 # App
