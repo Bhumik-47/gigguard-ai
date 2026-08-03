@@ -23,6 +23,7 @@ Run:
 from fastapi import FastAPI, APIRouter, Depends
 from .api.endpoints import dashboard, calculate, risk, simulate, root, monitoring
 from middleware.auth import verify_firebase_token
+from data.pilot_zones import PILOT_ZONES, find_nearest_zone, zones_by_city
 
 # ---------------------------------------------------------------------------
 # App
@@ -70,5 +71,40 @@ api_router.include_router(
     calculate.router,
     dependencies=[Depends(verify_firebase_token)]
 )
+
+# ---------------------------------------------------------------------------
+# Public Pilot Zone Endpoints
+# ---------------------------------------------------------------------------
+
+@api_router.get("/api/zones")
+def list_zones():
+    """Returns all pilot zones grouped by city."""
+    grouped = zones_by_city()
+    return {
+        city: [
+            {
+                "zoneId": z.zone_id,
+                "displayName": z.display_name,
+                "centerLat": z.center_lat,
+                "centerLon": z.center_lon,
+                "radiusKm": z.radius_km,
+            }
+            for z in zones
+        ]
+        for city, zones in grouped.items()
+    }
+
+@api_router.get("/api/zones/nearest")
+def nearest_zone(lat: float, lon: float):
+    """Returns the nearest pilot zone for given coordinates."""
+    zone = find_nearest_zone(lat, lon)
+    return {
+        "zoneId": zone.zone_id,
+        "displayName": zone.display_name,
+        "cityName": zone.city_name,
+        "centerLat": zone.center_lat,
+        "centerLon": zone.center_lon,
+        "radiusKm": zone.radius_km,
+    }
 
 app.include_router(api_router)
