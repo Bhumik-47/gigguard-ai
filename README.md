@@ -62,6 +62,12 @@ GigGuard AI constructs an active digital shield. A rider buys an inexpensive pol
 
 ---
 
+## Authentication Setup
+
+All financial/policy API routes require a Firebase ID token in the request header:
+
+---
+
 ## 🏗️ System Architecture
 
 GigGuard AI relies on a modular microservices architecture designed to scale seamlessly under heavy concurrent API requests when major regional weather events unfold.
