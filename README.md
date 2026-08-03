@@ -62,6 +62,12 @@ GigGuard AI constructs an active digital shield. A rider buys an inexpensive pol
 
 ---
 
+## Authentication Setup
+
+All financial/policy API routes require a Firebase ID token in the request header:
+
+---
+
 ## 🏗️ System Architecture
 
 GigGuard AI relies on a modular microservices architecture designed to scale seamlessly under heavy concurrent API requests when major regional weather events unfold.
@@ -148,6 +154,8 @@ Update your internal pipeline manager and acquire project execution dependencies
 
 pip install --upgrade pip
 pip install fastapi uvicorn requests python-dotenv
+
+> **Tip:** If additional dependencies are added to the project later, prefer installing them from a `requirements.txt` file (when available) to ensure consistent environments across all contributors.
 
 3. Booting Up the Live REST Server
 Execute the application wrapper via Uvicorn with watch flags activated:
