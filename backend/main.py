@@ -24,6 +24,7 @@ from fastapi import FastAPI, APIRouter, Depends
 from backend.api.endpoints import dashboard, calculate, risk, simulate, root, monitoring
 from backend.middleware.auth import verify_firebase_token
 from backend.data.pilot_zones import PILOT_ZONES, find_nearest_zone, zones_by_city
+from routes.environment import router as environment_router
 
 # ---------------------------------------------------------------------------
 # App
@@ -107,4 +108,5 @@ def nearest_zone(lat: float, lon: float):
         "radiusKm": zone.radius_km,
     }
 
-app.include_router(api_router)
+
+app.include_router(environment_router)
