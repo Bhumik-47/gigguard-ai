@@ -46,3 +46,6 @@ body { background: var(--bg); color: var(--text); font-family: system-ui, sans-s
   .env-grid { grid-template-columns: 1fr; }
   .policy-details { grid-template-columns: 1fr 1fr; }
 }
+
+body { background: var(--bg-primary); color: var(--text-primary); }
+.card { background: var(--bg-card); border: 1px solid var(--border-color); }

@@ -337,3 +337,6 @@
     margin-left: 10px;
 }
 .btn-logout:hover { border-color: rgba(255,75,92,0.4); color: var(--red); }
+
+body { background: var(--bg-primary); color: var(--text-primary); }
+.card { background: var(--bg-card); border: 1px solid var(--border-color); }

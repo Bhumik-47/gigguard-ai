@@ -2,6 +2,15 @@
 <html lang="en">
 
 <head>
+    <script>
+        // Inline to prevent FOUC (Flash of Unstyled Content)
+        (function(){
+            var t = localStorage.getItem('gigguard-theme') ||
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    <link rel="stylesheet" href="css/dark-mode.css">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GigGuard AI — Secure Login</title>
