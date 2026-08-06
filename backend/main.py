@@ -26,6 +26,11 @@ from backend.middleware.auth import verify_firebase_token
 from backend.data.pilot_zones import PILOT_ZONES, find_nearest_zone, zones_by_city
 from routes.environment import router as environment_router
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from middleware.rate_limiter import limiter, rate_limit_exceeded_handler
+
+
 # ---------------------------------------------------------------------------
 # App
 # ---------------------------------------------------------------------------
@@ -110,3 +115,7 @@ def nearest_zone(lat: float, lon: float):
 
 
 app.include_router(environment_router)
+app.include_router(api_router)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)

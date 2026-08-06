@@ -1,0 +1,41 @@
+/* frontend/css/dark-mode.css */
+
+/* Light mode defaults (CSS custom properties) */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a2e;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --accent-color: #0d6efd;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --risk-low: #d1fae5;
+  --risk-low-text: #065f46;
+  --risk-high: #fee2e2;
+  --risk-high-text: #991b1b;
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --accent-color: #60a5fa;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --risk-low: #064e3b;
+  --risk-low-text: #6ee7b7;
+  --risk-high: #7f1d1d;
+  --risk-high-text: #fca5a5;
+}
+
+/* Smooth transitions */
+body,
+.card,
+.navbar,
+.sidebar {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}

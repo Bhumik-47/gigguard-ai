@@ -142,6 +142,31 @@ cd backend
 
 Construct an isolated python virtual environment instance to avoid dependency collision across your operating system:
 
+## Local Setup
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/Bhumik-47/gigguard-ai.git
+cd gigguard-ai
+```
+
+### 2. Configure environment variables
+```bash
+cp backend/.env.example backend/.env
+# Now open backend/.env and fill in your actual API keys
+```
+
+### 3. Install dependencies
+```bash
+cd backend
+pip install -r requirements.txt   # or: pip install fastapi uvicorn requests python-dotenv
+```
+
+### 4. Run the backend
+```bash
+python -m uvicorn main:app --reload
+```
+
 # On Linux/macOS
 python3 -m venv venv
 source venv/bin/activate
