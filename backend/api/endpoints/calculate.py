@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from backend.dependencies.exclusions import ClaimContext, evaluate_exclusions
 from backend.dependencies.fraud_engine import detect_fraud
 from backend.dependencies.payout_engine import (
@@ -8,12 +8,15 @@ from backend.dependencies.payout_engine import (
 )
 from backend.dependencies.risk_engine import calculate_risk, predict_risk_trend
 from backend.models.schemas import CalculateResponse
+from middleware.rate_limiter import limiter
 
 router = APIRouter()
 
 @router.get("/calculate", response_model=CalculateResponse,
          summary="Custom risk & payout calculation", tags=["Utility"])
+@limiter.limit("5/minute")
 def calculate(
+    request: Request,
     rainfall: float = Query(default=50.0, ge=0, le=500,
                             description="Rainfall intensity mm/hr"),
     aqi: float = Query(default=200.0, ge=0, le=1000,
