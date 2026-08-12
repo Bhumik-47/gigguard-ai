@@ -26,6 +26,10 @@ from backend.middleware.auth import verify_firebase_token
 from backend.data.pilot_zones import PILOT_ZONES, find_nearest_zone, zones_by_city
 from routes.environment import router as environment_router
 
+from services.weather_service import get_weather_data
+from services.aqi_service import get_aqi_data
+from services.trigger_evaluator import evaluate_trigger
+
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from middleware.rate_limiter import limiter, rate_limit_exceeded_handler
@@ -102,6 +106,13 @@ def list_zones():
         ]
         for city, zones in grouped.items()
     }
+
+@app.get("/risk")
+def get_risk(lat: float, lon: float):
+    weather = get_weather_data(lat, lon)
+    aqi = get_aqi_data(lat, lon)
+    # ... pass to your existing risk engine
+    return {"weather": weather, "aqi": aqi}
 
 @api_router.get("/api/zones/nearest")
 def nearest_zone(lat: float, lon: float):

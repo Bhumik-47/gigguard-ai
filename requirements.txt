@@ -11,3 +11,6 @@ httpx
 
 slowapi==0.1.9
 pydantic>=2.0
+
+pytest
+pytest-mock
