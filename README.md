@@ -40,6 +40,23 @@ All structural decisions, weather logs, and payout milestones are validated thro
 ### 📊 Micro-Premium & Micro-Payout Models
 Designed to match the fluid cash flow of gig workers, the platform handles ultra-low premiums (e.g., micro-transactions per delivery shift) and yields instantaneous micro-payouts immediately into virtual wallets upon trigger threshold confirmation.
 
+## Performance
+
+### API Response Caching
+
+GigGuard AI caches AI analysis results (contract analysis, scope creep detection) server-side to eliminate redundant API calls when the same input is submitted more than once.
+
+**Strategy:**
+- Cache key: SHA-256 hash of `contract_text + client_message + user_id`
+- TTL: 24 hours
+- Invalidation: triggered automatically when the user updates a contract or client message
+
+**Headers:**
+- `X-Cache: HIT` — result served from cache (instant, zero token cost)
+- `X-Cache: MISS` — result freshly computed from the AI API
+
+**Current implementation:** in-memory Python dict (sufficient for MVP/single-server deployments).
+**Production upgrade path:** replace `_store` dict in `backend/services/cache_service.py` with Redis calls — the interface is identical.
 ---
 
 ## ⚠️ The Problem & The Solution

@@ -30,6 +30,9 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from middleware.rate_limiter import limiter, rate_limit_exceeded_handler
 
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from services.cache_service import cache_get, cache_set, make_analysis_key
 
 # ---------------------------------------------------------------------------
 # App
@@ -119,3 +122,36 @@ app.include_router(api_router)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+@app.post("/analyze")
+def analyze(
+    contract_text: str,
+    client_message: str,
+    user_id: str,
+):
+    cache_key = make_analysis_key(contract_text, client_message, user_id)
+
+    # --- Cache HIT ---
+    cached = cache_get(cache_key)
+    if cached is not None:
+        response = JSONResponse(content=cached)
+        response.headers["X-Cache"] = "HIT"
+        return response
+
+    # --- Cache MISS: call the AI API ---
+    result = call_ai_api(contract_text, client_message)  # your existing function
+    cache_set(cache_key, result)
+
+    response = JSONResponse(content=result)
+    response.headers["X-Cache"] = "MISS"
+    return response
+
+
+# --- Cache invalidation endpoint ---
+# Call this from the frontend when the user updates a contract or message
+@app.post("/analyze/invalidate")
+def invalidate_cache(contract_text: str, client_message: str, user_id: str):
+    from services.cache_service import cache_invalidate
+    key = make_analysis_key(contract_text, client_message, user_id)
+    cache_invalidate(key)
+    return {"status": "cache invalidated"}
