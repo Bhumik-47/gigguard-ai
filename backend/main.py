@@ -53,6 +53,8 @@ from backend.core.config import configure_middleware
 
 configure_middleware(app)
 
+from backend.routes.ws import router as ws_router
+app.include_router(ws_router)
 # ---------------------------------------------------------------------------
 # API Router with Firebase Authentication Protection
 # ---------------------------------------------------------------------------
