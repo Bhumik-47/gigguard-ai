@@ -53,6 +53,9 @@ from backend.core.config import configure_middleware
 
 configure_middleware(app)
 
+from backend.routes.claims import router as claims_router
+app.include_router(claims_router)
+
 # ---------------------------------------------------------------------------
 # API Router with Firebase Authentication Protection
 # ---------------------------------------------------------------------------
