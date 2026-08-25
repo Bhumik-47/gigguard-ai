@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GigGuard — My Claims</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 2rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .lifetime-banner { background: #1e3a5f; border-radius: 10px; padding: 1rem 1.5rem;
+                       margin-bottom: 1.5rem; font-size: 1.1rem; }
+    .lifetime-banner span { color: #60a5fa; font-weight: bold; font-size: 1.3rem; }
+    .claim-card { background: #1e293b; border-radius: 12px; padding: 1.2rem 1.5rem;
+                  margin-bottom: 1rem; border-left: 4px solid #475569; }
+    .claim-card.processed { border-left-color: #22c55e; }
+    .claim-card.pending   { border-left-color: #f59e0b; }
+    .claim-card.failed    { border-left-color: #ef4444; }
+    .claim-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    .claim-date { font-size: 0.85rem; color: #94a3b8; }
+    .payout-badge { padding: 3px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: bold; }
+    .payout-badge.processed { background: #14532d; color: #86efac; }
+    .payout-badge.pending   { background: #78350f; color: #fde68a; }
+    .payout-badge.failed    { background: #7f1d1d; color: #fca5a5; }
+    .trigger-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0.5rem 0; }
+    .trigger-tag { background: #334155; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; }
+    .weather-row { display: flex; gap: 1rem; font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem; }
+    .empty-state { text-align: center; padding: 3rem; color: #64748b; }
+    .export-btn { background: #3b82f6; color: white; border: none; border-radius: 8px;
+                  padding: 8px 18px; cursor: pointer; margin-bottom: 1rem; font-size: 0.9rem; }
+    @media print {
+      .export-btn, input, button:not(.no-print) { display: none; }
+      body { background: white; color: black; }
+      .claim-card { border: 1px solid #ccc; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🛡️ My GigGuard Claim History</h1>
+
+  <div style="margin:1rem 0;display:flex;gap:8px;">
+    <input id="worker-id" value="worker_001" placeholder="Worker ID"
+           style="padding:8px;background:#1e293b;border:none;border-radius:6px;color:#e2e8f0;width:180px">
+    <button onclick="loadClaims()"
+            style="padding:8px 16px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer">
+      Load Claims
+    </button>
+    <button class="export-btn" onclick="window.print()">📄 Export / Print Audit Log</button>
+  </div>
+
+  <div class="lifetime-banner" id="banner" style="display:none">
+    💰 Total earned through GigGuard: <span id="total-payout">₹0</span>
+  </div>
+
+  <div id="claim-list"><p class="empty-state">Enter your Worker ID and click Load Claims.</p></div>
+
+  <script>
+    async function loadClaims() {
+      const workerId = document.getElementById("worker-id").value.trim();
+      if (!workerId) return alert("Please enter a Worker ID");
+
+      const listEl = document.getElementById("claim-list");
+      listEl.innerHTML = "<p class='empty-state'>Loading...</p>";
+
+      try {
+        const res = await fetch(`http://localhost:8000/api/claims/history/${workerId}`);
+        const data = await res.json();
+
+        if (!data.claims || data.claims.length === 0) {
+          listEl.innerHTML = "<p class='empty-state'>No claims yet. Your active policies are monitoring conditions in real time.</p>";
+          return;
+        }
+
+        document.getElementById("banner").style.display = "block";
+        document.getElementById("total-payout").textContent = `₹${data.total_lifetime_payout_inr.toFixed(2)}`;
+
+        listEl.innerHTML = data.claims.map(c => `
+          <div class="claim-card ${c.payout_status}">
+            <div class="claim-header">
+              <span class="claim-date">${new Date(c.triggered_at).toLocaleDateString('en-IN', {day:'numeric',month:'long',year:'numeric'})}</span>
+              <span class="payout-badge ${c.payout_status}">
+                ${c.payout_status === 'processed' ? '₹' + c.payout_amount_inr + ' Paid' : c.payout_status.charAt(0).toUpperCase() + c.payout_status.slice(1)}
+              </span>
+            </div>
+            <div class="trigger-tags">
+              ${c.trigger_reasons.map(r => `<span class="trigger-tag">${r}</span>`).join('')}
+            </div>
+            <details>
+              <summary style="cursor:pointer;font-size:0.82rem;color:#60a5fa;margin-top:6px">📊 View Environmental Data</summary>
+              <div class="weather-row" style="margin-top:6px">
+                <span>🌡️ ${c.weather_snapshot.temperature_celsius}°C</span>
+                <span>🌧️ ${c.weather_snapshot.rainfall_mm_per_hr} mm/hr</span>
+                <span>💨 AQI ${c.weather_snapshot.aqi_pm25}</span>
+              </div>
+            </details>
+          </div>
+        `).join('');
+      } catch (e) {
+        listEl.innerHTML = `<p class='empty-state' style='color:#fca5a5'>Error loading claims: ${e.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

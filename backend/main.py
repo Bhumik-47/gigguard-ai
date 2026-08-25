@@ -78,8 +78,13 @@ from backend.core.config import configure_middleware
 
 configure_middleware(app)
 
+ feat/claim-history-timeline
+from backend.routes.claims import router as claims_router
+app.include_router(claims_router)
+
+=======
 from backend.routes.ws import router as ws_router
-app.include_router(ws_router)
+app.include_router(ws_router)   main
 # ---------------------------------------------------------------------------
 # API Router with Firebase Authentication Protection
 # ---------------------------------------------------------------------------
