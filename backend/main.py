@@ -30,6 +30,31 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from middleware.rate_limiter import limiter, rate_limit_exceeded_handler
 
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "validation_failed",
+            "detail": exc.errors(),
+            "message": "One or more request fields failed validation. Please check your input.",
+        },
+    )
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "internal_server_error",
+            "message": "An unexpected error occurred. Please try again.",
+        },
+    )
+
 
 # ---------------------------------------------------------------------------
 # App
