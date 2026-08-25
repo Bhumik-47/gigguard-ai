@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GigGuard — Live Policy Status</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #0f172a; color: #e2e8f0; }
+    #status-box { background: #1e293b; border-radius: 12px; padding: 1.5rem; margin-top: 1rem; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 0.85rem; }
+    .badge.LOW { background: #166534; color: #bbf7d0; }
+    .badge.MEDIUM { background: #92400e; color: #fef3c7; }
+    .badge.HIGH, .badge.CRITICAL { background: #7f1d1d; color: #fecaca; }
+    #log { background: #0f172a; border-radius: 8px; padding: 1rem; margin-top: 1rem;
+           max-height: 200px; overflow-y: auto; font-size: 0.8rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <h2>🛡️ GigGuard Live Policy Monitor</h2>
+  <input id="worker-id" placeholder="Enter Worker ID" value="worker_001"
+         style="padding:8px;border-radius:6px;border:none;background:#1e293b;color:#e2e8f0;width:200px">
+  <button onclick="connect()" style="margin-left:8px;padding:8px 16px;background:#3b82f6;
+          color:white;border:none;border-radius:6px;cursor:pointer">Connect</button>
+  <button onclick="disconnect()" style="margin-left:4px;padding:8px 16px;background:#ef4444;
+          color:white;border:none;border-radius:6px;cursor:pointer">Disconnect</button>
+
+  <div id="status-box">
+    <p>⚡ Status: <span id="conn-status">Disconnected</span></p>
+    <p>🌡️ Temp: <span id="temp">—</span></p>
+    <p>🌧️ Rain: <span id="rain">—</span></p>
+    <p>💨 Wind: <span id="wind">—</span></p>
+    <p>Risk: <span id="risk" class="badge">—</span></p>
+    <p id="trigger-banner" style="display:none;color:#fca5a5;font-weight:bold">
+      🚨 TRIGGER DETECTED — Payout Processing
+    </p>
+  </div>
+  <div id="log"></div>
+
+  <script>
+    let ws = null;
+    function log(msg) {
+      const el = document.getElementById("log");
+      el.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}<br>` + el.innerHTML;
+    }
+    function connect() {
+      const id = document.getElementById("worker-id").value;
+      if (ws) ws.close();
+      ws = new WebSocket(`ws://localhost:8000/ws/policy-status/${id}`);
+      ws.onopen = () => { document.getElementById("conn-status").textContent = "Connected ✅"; log("Connected"); };
+      ws.onmessage = (e) => {
+        const d = JSON.parse(e.data);
+        document.getElementById("temp").textContent = d.weather?.temperature_celsius + "°C";
+        document.getElementById("rain").textContent = d.weather?.rainfall_mm_per_hr + " mm/hr";
+        document.getElementById("wind").textContent = d.weather?.wind_speed_kmh + " km/h";
+        const riskEl = document.getElementById("risk");
+        riskEl.textContent = d.risk_level;
+        riskEl.className = "badge " + d.risk_level;
+        document.getElementById("trigger-banner").style.display = d.trigger_detected ? "block" : "none";
+        log("Update received: " + d.message);
+      };
+      ws.onclose = () => { document.getElementById("conn-status").textContent = "Disconnected"; log("Disconnected"); };
+      ws.onerror = (e) => log("Error: " + e);
+    }
+    function disconnect() { if (ws) ws.close(); }
+  </script>
+</body>
+</html>
