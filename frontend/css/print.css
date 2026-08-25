@@ -1,0 +1,27 @@
+/* Fallback print stylesheet for browsers where PDF rendering is restricted */
+@media print {
+  /* Hide navigation, buttons, sidebars */
+  nav, header, footer, .sidebar, #export-pdf-btn, .no-print {
+    display: none !important;
+  }
+
+  /* Ensure content fills the page */
+  #invoice-content,
+  #scope-report-content {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  body {
+    font-size: 12pt;
+    color: #000;
+    background: #fff;
+  }
+
+  /* Avoid breaking invoice lines across pages */
+  tr, .line-item {
+    page-break-inside: avoid;
+  }
+}
